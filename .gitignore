@@ -1,0 +1,10 @@
+node_modules/
+dist/
+brand/
+*.log
+.DS_Store
+/out/
+/tmp/
+.env
+examples/*/captured/
+examples/*/.watercolor/
