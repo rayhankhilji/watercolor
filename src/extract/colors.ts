@@ -246,6 +246,7 @@ function assignRoles(palette: Swatch[], pageBg: Hex, capture: CaptureResult, log
     if (s.hex === primary) continue;
     if (distance(s.hex, primary) < 0.07) continue;
     if (oklch(s.hex).c < 0.06) continue;
+    if (distance(s.hex, foreground) < 0.09 || oklch(s.hex).l < 0.3) continue;
     if (accent.some((a) => distance(a, s.hex) < 0.07)) continue;
     if (ctaScore(s) < 0.02 && s.share < 0.002) continue;
     accent.push(s.hex);

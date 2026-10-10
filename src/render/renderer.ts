@@ -1,0 +1,123 @@
+import { chromium, type Browser, type Page } from "playwright";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { write, ensureDir } from "../util/fs.js";
+import { encodeFrames } from "./ffmpeg.js";
+import { log } from "../util/log.js";
+
+/**
+ * Renders HTML documents to PNG / PDF / video using headless Chromium.
+ * Documents are written to disk first so relative asset paths (fonts, logos) resolve.
+ */
+export class Renderer {
+  private pages = new Map<number, Page>();
+
+  private constructor(
+    private browser: Browser,
+    private workDir: string,
+  ) {}
+
+  static async create(workDir: string) {
+    const browser = await chromium.launch({ args: ["--enable-webgl", "--ignore-gpu-blocklist", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--font-render-hinting=none"] });
+    await ensureDir(workDir);
+    return new Renderer(browser, workDir);
+  }
+
+  async close() {
+    await this.browser.close();
+  }
+
+  private async open(html: string, name: string, width: number, height: number, scale = 1): Promise<Page> {
+    const file = path.isAbsolute(name) ? `${name}.html` : path.join(this.workDir, `${name}.html`);
+    await write(file, html);
+    // Pages are reused per device-scale-factor: creating a page costs ~400ms, navigating ~30ms.
+    let page = this.pages.get(scale);
+    if (!page || page.isClosed()) {
+      page = await this.browser.newPage({ viewport: { width, height }, deviceScaleFactor: scale });
+      page.setDefaultTimeout(120_000);
+      this.pages.set(scale, page);
+    } else await page.setViewportSize({ width, height });
+    await page.goto(pathToFileURL(file).href, { waitUntil: "load" });
+    await page.evaluate(() => (document as unknown as { fonts: { ready: Promise<unknown> } }).fonts.ready);
+    await page.waitForTimeout(30);
+    return page;
+  }
+
+  /** Open an HTML document and run a callback against the live page. */
+  async withPage<T>(html: string, o: { width: number; height: number; name: string }, fn: (page: Page) => Promise<T>): Promise<T> {
+    const page = await this.open(html, o.name, o.width, o.height, 1);
+    try {
+      return await fn(page);
+    } finally {
+      await page.goto("about:blank").catch(() => undefined);
+    }
+  }
+
+  async png(html: string, out: string, o: { width: number; height: number; scale?: number; transparent?: boolean; fullPage?: boolean; name?: string }) {
+    const page = await this.open(html, o.name ?? path.basename(out, path.extname(out)), o.width, o.height, o.scale ?? 1);
+    try {
+      await ensureDir(path.dirname(out));
+      await page.screenshot({ path: out, omitBackground: !!o.transparent, fullPage: !!o.fullPage, type: out.endsWith(".jpg") ? "jpeg" : "png", ...(out.endsWith(".jpg") ? { quality: 92 } : {}) });
+    } finally {
+      await page.goto("about:blank").catch(() => undefined);
+    }
+    return out;
+  }
+
+  /** Render an SVG string to PNG at an exact pixel size, transparent background. */
+  async svgToPng(svg: string, out: string, width: number, height: number, background = "transparent", padding = 0) {
+    const html = `<!doctype html><html><head><style>html,body{margin:0;width:${width}px;height:${height}px;background:${background};overflow:hidden}
+      .w{width:100%;height:100%;display:grid;place-items:center;box-sizing:border-box;padding:${padding}px}
+      .w svg{width:100%;height:100%;display:block}</style></head><body><div class="w">${svg}</div></body></html>`;
+    return this.png(html, out, { width, height, transparent: background === "transparent", name: `svg-${path.basename(out, ".png")}` });
+  }
+
+  async pdf(html: string, out: string, o: { width?: string; height?: string; name?: string } = {}) {
+    const page = await this.open(html, o.name ?? path.basename(out, ".pdf"), 1440, 900);
+    try {
+      await page.emulateMedia({ media: "print" });
+      await page.pdf({ path: out, width: o.width ?? "1440px", height: o.height ?? "900px", printBackground: true, preferCSSPageSize: true });
+    } finally {
+      await page.goto("about:blank").catch(() => undefined);
+    }
+    return out;
+  }
+
+  /**
+   * Render a deterministic animation. The document must expose `window.__seek(ms)`
+   * which puts the scene at an exact time (we pause all WAAPI animations and drive time).
+   */
+  async video(html: string, o: { width: number; height: number; fps: number; durationMs: number; mp4?: string; webm?: string; gif?: string; gifWidth?: number; poster?: string; name: string; transparent?: boolean }) {
+    const page = await this.open(html, o.name, o.width, o.height, 1);
+    const tmp = await mkdtemp(path.join(tmpdir(), "wc-frames-"));
+    try {
+      const frames = Math.round((o.durationMs / 1000) * o.fps);
+      await page.evaluate(() => {
+        const w = window as unknown as { __seek?: (t: number) => void };
+        if (!w.__seek) {
+          // Generic WAAPI driver: pause everything and set currentTime.
+          w.__seek = (t: number) => document.getAnimations().forEach((a) => {
+            a.pause();
+            a.currentTime = t;
+          });
+        }
+      });
+      for (let i = 0; i < frames; i++) {
+        const t = (i / o.fps) * 1000;
+        await page.evaluate((ms) => (window as unknown as { __seek: (t: number) => void | Promise<void> }).__seek(ms), t);
+        await page.screenshot({ path: path.join(tmp, `${String(i).padStart(5, "0")}.png`), omitBackground: !!o.transparent });
+        if (o.poster && i === Math.floor(frames * 0.66)) await page.screenshot({ path: o.poster, omitBackground: !!o.transparent });
+      }
+      const made = await encodeFrames({ fps: o.fps, input: path.join(tmp, "%05d.png"), mp4: o.mp4, webm: o.webm, gif: o.gif, gifWidth: o.gifWidth, alpha: o.transparent });
+      return made;
+    } catch (e) {
+      log.warn(`Render ${o.name} failed: ${(e as Error).message}`);
+      return [];
+    } finally {
+      await page.goto("about:blank").catch(() => undefined);
+      await rm(tmp, { recursive: true, force: true });
+    }
+  }
+}

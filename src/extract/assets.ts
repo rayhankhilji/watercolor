@@ -421,6 +421,8 @@ export function extractComponents(capture: CaptureResult, pageBg: Hex, primary: 
     const usedVariants = new Map<string, number>();
     for (const e of [...map.values()].sort((a, b) => b.count - a.count || a.sample.rect.y - b.sample.rect.y)) {
       const n = usedVariants.get(e.variant) || 0;
+      if ((e.variant === "ghost" || e.variant === "neutral") && n >= 1) continue;
+      if (/^[\d\s+%.,$€£×x-]+$/.test(e.sample.text)) continue;
       usedVariants.set(e.variant, n + 1);
       const h = hovers.get(e.sample.id);
       out.push({

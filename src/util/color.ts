@@ -153,7 +153,8 @@ export function ramp(hex: string): { pinned: string; steps: Record<string, strin
     }
   });
   // Peak chroma such that the pinned step reproduces the source chroma.
-  const peak = src.c / RAMP_C[pinIdx];
+  // Cap so a very dark/light source (pinned at 50/950) doesn't explode into neon mid-tones.
+  const peak = Math.min(src.c / RAMP_C[pinIdx], Math.max(src.c * 1.35, 0.06), 0.32);
   const lShift = src.l - RAMP_L[pinIdx];
   const steps: Record<string, string> = {};
   RAMP_STEPS.forEach((step, i) => {
