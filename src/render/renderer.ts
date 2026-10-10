@@ -1,7 +1,7 @@
 import { chromium, type Browser, type Page } from "playwright";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, writeFile, copyFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { write, ensureDir } from "../util/fs.js";
 import { encodeFrames } from "./ffmpeg.js";
@@ -89,7 +89,7 @@ export class Renderer {
    * Render a deterministic animation. The document must expose `window.__seek(ms)`
    * which puts the scene at an exact time (we pause all WAAPI animations and drive time).
    */
-  async video(html: string, o: { width: number; height: number; fps: number; durationMs: number; mp4?: string; webm?: string; gif?: string; gifWidth?: number; poster?: string; name: string; transparent?: boolean }) {
+  async video(html: string, o: { width: number; height: number; fps: number; durationMs: number; mp4?: string; webm?: string; gif?: string; gifWidth?: number; poster?: string; name: string; transparent?: boolean; canvas?: string }) {
     const page = await this.open(html, o.name, o.width, o.height, 1);
     const tmp = await mkdtemp(path.join(tmpdir(), "wc-frames-"));
     try {
@@ -104,6 +104,29 @@ export class Renderer {
           });
         }
       });
+      if (o.canvas) {
+        // Fast path for WebGL scenes: read pixels straight from the canvas (no compositor round-trip),
+        // in batches, then let ffmpeg upscale to the output size.
+        const batch = 12;
+        for (let i = 0; i < frames; i += batch) {
+          const urls = await page.evaluate(
+            ({ sel, start, n, fps }) => {
+              const w = window as unknown as { __seek: (t: number) => void };
+              const c = document.querySelector(sel) as HTMLCanvasElement;
+              const out: string[] = [];
+              for (let k = start; k < start + n; k++) {
+                w.__seek((k / fps) * 1000);
+                out.push(c.toDataURL("image/png"));
+              }
+              return out;
+            },
+            { sel: o.canvas, start: i, n: Math.min(batch, frames - i), fps: o.fps },
+          );
+          for (const [k, u] of urls.entries()) await writeFile(path.join(tmp, `${String(i + k).padStart(5, "0")}.png`), Buffer.from(u.split(",")[1], "base64"));
+        }
+        if (o.poster) await copyFile(path.join(tmp, `${String(Math.floor(frames * 0.66)).padStart(5, "0")}.png`), o.poster);
+        return await encodeFrames({ fps: o.fps, input: path.join(tmp, "%05d.png"), mp4: o.mp4, webm: o.webm, gif: o.gif, gifWidth: o.gifWidth, scale: { w: o.width, h: o.height } });
+      }
       for (let i = 0; i < frames; i++) {
         const t = (i / o.fps) * 1000;
         await page.evaluate((ms) => (window as unknown as { __seek: (t: number) => void | Promise<void> }).__seek(ms), t);

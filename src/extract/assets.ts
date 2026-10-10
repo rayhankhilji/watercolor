@@ -310,16 +310,17 @@ export async function extractImagery(capture: CaptureResult, outDir: string): Pr
       const key = hash(svg);
       if (seen.has(key)) continue;
       seen.add(key);
-      const name = cleanLogoName(w.label) || `logo-${key.slice(0, 6)}`;
-      const file = path.join(outDir, "captured", "customer-logos", `${slug(name)}.svg`);
+      // Unlabelled marks are kept as files but get no (invented) name.
+      const name = cleanLogoName(w.label);
+      const file = path.join(outDir, "captured", "customer-logos", `${name ? slug(name) : `unlabelled-${key.slice(0, 6)}`}.svg`);
       await write(file, svg);
-      if (!customerLogos.some((c) => c.name.toLowerCase() === name.toLowerCase())) customerLogos.push({ name, url: "inline-svg", path: file });
+      if (!name || !customerLogos.some((c) => c.name.toLowerCase() === name.toLowerCase())) customerLogos.push({ name, url: "inline-svg", path: file });
     }
   }
   // Bring raster customer logos into their own folder for convenience.
   for (const c of customerLogos) {
     if (c.path && !c.path.includes("customer-logos") && (await exists(c.path))) {
-      const dest = path.join(outDir, "captured", "customer-logos", `${slug(c.name)}${path.extname(c.path)}`);
+      const dest = path.join(outDir, "captured", "customer-logos", `${slug(c.name || path.basename(c.path, path.extname(c.path)))}${path.extname(c.path)}`);
       await write(dest, await readFile(c.path));
       c.path = dest;
     }
@@ -402,7 +403,7 @@ export function extractMedia(capture: CaptureResult): MediaSet {
 const COMPONENT_KEYS = ["background-color", "color", "border-top-left-radius", "border-top-width", "border-top-color", "font-size", "font-weight", "padding-top", "padding-left"];
 
 export function extractComponents(capture: CaptureResult, pageBg: Hex, primary: Hex): ComponentSet {
-  type Raw = { id: string; text: string; tag: string; rect: { y: number; w: number; h: number }; styles: Record<string, string> };
+  type Raw = { id: string; text: string; tag: string; rect: { y: number; w: number; h: number }; styles: Record<string, string>; page?: number };
   const home = capture.pages[0].raw;
   const shots = new Map(capture.componentShots.map((s) => [s.id, s.path]));
   const hovers = new Map(capture.hovers.map((h) => [h.id, h]));
@@ -414,7 +415,7 @@ export function extractComponents(capture: CaptureResult, pageBg: Hex, primary: 
       const e = map.get(key);
       if (e) {
         e.count++;
-        if (shots.has(r.id) && !shots.has(e.sample.id)) e.sample = r;
+        if (shotOf(r) && !shotOf(e.sample)) e.sample = r;
       } else map.set(key, { sample: r, count: 1, variant: variantOf(r) });
     }
     const out: ComponentSample[] = [];
@@ -424,14 +425,14 @@ export function extractComponents(capture: CaptureResult, pageBg: Hex, primary: 
       if ((e.variant === "ghost" || e.variant === "neutral") && n >= 1) continue;
       if (/^[\d\s+%.,$€£×x-]+$/.test(e.sample.text)) continue;
       usedVariants.set(e.variant, n + 1);
-      const h = hovers.get(e.sample.id);
+      const h = hoverOf(e.sample);
       out.push({
         kind,
         variant: n ? `${e.variant}-${n + 1}` : e.variant,
         text: e.sample.text.slice(0, 80),
         styles: compactStyles(e.sample.styles),
         hover: h ? diffStyles(h.before, h.after) : undefined,
-        screenshot: shots.get(e.sample.id),
+        screenshot: shotOf(e.sample),
         count: e.count,
       });
       if (out.length >= limit) break;
@@ -449,7 +450,10 @@ export function extractComponents(capture: CaptureResult, pageBg: Hex, primary: 
     if (!isNeutral(hex)) return "accent";
     return "neutral";
   };
-  const all = <K extends string>(k: K) => capture.pages.flatMap((p, i) => (p.raw[k as keyof typeof p.raw] as Raw[]).map((r) => ({ ...r, rect: { ...r.rect, y: r.rect.y + i * 100000 } })));
+  // Element ids are per page; screenshots/hovers were only captured on the homepage (page 0).
+  const all = <K extends string>(k: K) => capture.pages.flatMap((p, i) => (p.raw[k as keyof typeof p.raw] as Raw[]).map((r) => ({ ...r, page: i, rect: { ...r.rect, y: r.rect.y + i * 100000 } })));
+  const shotOf = (r: Raw) => (r.page === 0 ? shots.get(r.id) : undefined);
+  const hoverOf = (r: Raw) => (r.page === 0 ? hovers.get(r.id) : undefined);
   const buttons = group(all("buttons"), "button", buttonVariant, 8);
   // Make sure a "primary" exists and is first.
   buttons.sort((a, b) => (a.variant === "primary" ? -1 : b.variant === "primary" ? 1 : 0));

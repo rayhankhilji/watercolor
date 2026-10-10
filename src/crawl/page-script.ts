@@ -509,7 +509,16 @@ export function collectPage(opts: { maxElements: number; brandHint: string; page
     if (t && t.length < 200 && headings.length < 80) {
       const cs = getComputedStyle(h);
       const hr = h.getBoundingClientRect();
-      headings.push({ tag: h.tagName.toLowerCase(), text: t, size: parseFloat(cs.fontSize), y: hr.top + scrollY, centered: cs.textAlign === "center" || (Math.abs(hr.left + hr.width / 2 - W / 2) < 24 && hr.width < W * 0.8) });
+      // Distinct text colors inside the heading (two-tone headline treatments).
+      const tcols: string[] = [];
+      const walk = document.createTreeWalker(h, NodeFilter.SHOW_TEXT);
+      let tn: Node | null;
+      while ((tn = walk.nextNode())) {
+        if (!(tn.textContent || "").trim() || !tn.parentElement) continue;
+        const col = getComputedStyle(tn.parentElement).color;
+        if (!tcols.includes(col)) tcols.push(col);
+      }
+      headings.push({ colors: tcols, tag: h.tagName.toLowerCase(), text: t, size: parseFloat(cs.fontSize), y: hr.top + scrollY, centered: cs.textAlign === "center" || (Math.abs(hr.left + hr.width / 2 - W / 2) < 24 && hr.width < W * 0.8) });
     }
   });
   // Large non-heading text acting as display copy

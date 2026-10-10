@@ -96,3 +96,15 @@ export function firstSentence(s: string) {
   const m = /^(.{12,}?[.!?])\s/.exec(s);
   return m ? m[1] : s;
 }
+
+/**
+ * Headline markup honoring the brand's two-tone treatment when measured:
+ * the first sentence in the primary ink, the continuation in the secondary color.
+ * `onDark` swaps to light-on-dark equivalents.
+ */
+export function headlineHtml(b: { profile: { typography: { twoTone?: { primary: string; secondary: string } } } }, text: string, onDark = false) {
+  const tt = b.profile.typography.twoTone;
+  const m = /^(.{8,}?[.!?])\s+(.+)$/.exec(text);
+  if (!tt || !m) return esc(text);
+  return `${esc(m[1])} <span style="opacity:${onDark ? 0.62 : 1};${onDark ? "" : `color:${tt.secondary}`}">${esc(m[2])}</span>`;
+}

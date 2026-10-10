@@ -22,6 +22,8 @@ interface Comp {
   h: number;
   durationMs: number;
   transparent?: boolean;
+  /** Selector of a WebGL canvas to read frames from directly (fast path). */
+  canvas?: string;
   html: string;
 }
 
@@ -93,6 +95,7 @@ export function compositions(b: ResolvedBrand, fontCss: string, vars: string, o:
     w: gw,
     h: gh,
     durationMs: loopMs,
+    canvas: "#c",
     html: base(
       b, fontCss, vars, gw, gh, gradCols[0], fg,
       `canvas{display:block;width:100%;height:100%}.grain{position:absolute;inset:0;opacity:.14;mix-blend-mode:overlay;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}`,
@@ -217,6 +220,7 @@ void main(){
   x = x < .5 ? x * 2. : 2. - x * 2.;
   vec3 col = ramp(smoothstep(.02, .98, x));
   col += .06 * (fbm(p*2.2 + q*2. - loop) );
+  col += (fract(sin(dot(gl_FragCoord.xy + t * 97., vec2(12.9898, 78.233))) * 43758.5453) - .5) * .03;
   o = vec4(col, 1.);
 }\`;
 const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
@@ -346,6 +350,7 @@ export async function renderMotion(b: ResolvedBrand, r: Renderer, outDir: string
       gifWidth: Math.min(c.w, c.name === "loader" ? 256 : 720),
       poster,
       transparent: c.transparent,
+      canvas: c.canvas,
     });
     files.push(...made, poster);
     rendered.push({ name: c.name, title: c.title, description: c.description, files: made, poster });

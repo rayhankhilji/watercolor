@@ -196,7 +196,8 @@ function assignRoles(palette: Swatch[], pageBg: Hex, capture: CaptureResult, log
 
   // Primary: the chromatic color that the brand spends on its CTAs, links, logo and gradients.
   const chromatic = palette.filter((s) => !isNeutral(s.hex, 0.045));
-  const buttons = capture.pages.flatMap((p) => p.raw.buttons as { styles: Record<string, string>; rect: { y: number } }[]);
+  // The homepage above the fold is the brand's current statement; other pages may lag behind a redesign.
+  const buttons = capture.pages.flatMap((p, pi) => (p.raw.buttons as { styles: Record<string, string>; rect: { y: number } }[]).map((b) => ({ ...b, w: (pi === 0 ? 4 : 1) * (b.rect.y < 900 ? 3 : 1) })));
   const btnBg = new Map<Hex, number>();
   for (const b of buttons) {
     const c = parseColor(b.styles["background-color"]);
@@ -204,7 +205,7 @@ function assignRoles(palette: Swatch[], pageBg: Hex, capture: CaptureResult, log
     const hex = composite(c, pageBg);
     const near = palette.find((s) => distance(s.hex, hex) < 0.018)?.hex ?? hex;
     // Buttons above the fold weigh more.
-    btnBg.set(near, (btnBg.get(near) || 0) + (b.rect.y < 900 ? 3 : 1));
+    btnBg.set(near, (btnBg.get(near) || 0) + b.w);
   }
   const ctaScore = (s: Swatch) => {
     const btn = btnBg.get(s.hex) || 0;

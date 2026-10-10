@@ -390,11 +390,14 @@ export async function capture(opts: CaptureOptions): Promise<CaptureResult> {
 }
 
 async function launch(headed?: boolean): Promise<Browser> {
-  return chromium.launch({
-    headless: !headed,
-    // Default GPU config: forcing SwiftShader flags made WebGL-heavy pages ~8× slower to screenshot.
-    args: ["--autoplay-policy=no-user-gesture-required"],
-  });
+  const args = ["--autoplay-policy=no-user-gesture-required"];
+  // Prefer Chrome's "new headless" (full browser): it gets real GPU acceleration, so WebGL
+  // hero canvases animate at a usable frame rate for recording. Fall back to the headless shell.
+  try {
+    return await chromium.launch({ headless: !headed, channel: "chromium", args });
+  } catch {
+    return chromium.launch({ headless: !headed, args });
+  }
 }
 
 function guessBrandHint(url: string) {
@@ -641,7 +644,13 @@ async function captureCanvases(page: Page, raw: RawPage, dir: string, result: Ca
         let poster = `${base}-poster.png`;
         if (rec.poster && rec.poster.length > 3000) await write(poster, Buffer.from(rec.poster.split(",")[1], "base64"));
         else poster = "";
-        const made = await transcode(webm, `${base}.mp4`, `${base}.gif`, Math.min(640, c.w)).catch(() => [] as string[]);
+        const pageBg = await page.evaluate(() => {
+          const pick = (el: Element) => getComputedStyle(el).backgroundColor;
+          const c = pick(document.body);
+          return c && c !== "rgba(0, 0, 0, 0)" ? c : pick(document.documentElement);
+        }).catch(() => "rgb(255, 255, 255)");
+        const bgHex = rgbToHex(pageBg);
+        const made = await transcode(webm, `${base}.mp4`, `${base}.gif`, Math.min(640, c.w), bgHex).catch(() => [] as string[]);
         if (!poster && made.length) {
           poster = `${base}-poster.jpg`;
           await extractFrame(`${base}.mp4`, poster).catch(() => (poster = ""));
@@ -774,4 +783,10 @@ export async function listFiles(dir: string, re: RegExp): Promise<string[]> {
   };
   await walk(dir);
   return out;
+}
+
+function rgbToHex(css: string) {
+  const m = css.match(/\d+(\.\d+)?/g);
+  if (!m || m.length < 3 || (m.length > 3 && Number(m[3]) === 0)) return "#ffffff";
+  return "#" + m.slice(0, 3).map((v) => Math.round(Number(v)).toString(16).padStart(2, "0")).join("");
 }

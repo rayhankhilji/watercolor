@@ -69,6 +69,8 @@ export function hardRules(b: ResolvedBrand): Rule[] {
     text: `**Display type is ${display} ${h1.weight}** at ${h1.size}px / ${h1.lineHeight} with ${h1.letterSpacing <= -0.005 ? `${h1.letterSpacing.toFixed(3)}em tracking (tight)` : "default tracking"}.${h1.weight <= 400 ? " Light, not bold — weight never carries hierarchy, size does." : h1.weight >= 700 ? " Heavy and confident." : ""}`,
     evidence: "typography.styles h1",
   });
+  const tt = P.typography.twoTone;
+  if (tt) rules.push({ text: `**Two-tone headlines.** Set the statement in \`${tt.primary.toUpperCase()}\` and the continuation in \`${tt.secondary.toUpperCase()}\` — same size, same weight. Hierarchy by color, not bold.`, evidence: `${tt.examples.length} headings measured with two text colors` });
   const body = b.type.body;
   rules.push({ text: `**Body copy is ${b.fonts.body.family} ${body.weight}, ${body.size}px / ${body.lineHeight}** in \`${(body.color ?? r.muted).toUpperCase()}\`.`, evidence: "typography.styles body" });
 

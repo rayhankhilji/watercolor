@@ -78,6 +78,25 @@ program
   });
 
 program
+  .command("profile")
+  .argument("[dir]", "brand directory", "brand")
+  .description("rebuild brand.json from the saved capture (no re-crawl) — use after upgrading watercolor")
+  .action(async (dir: string) => {
+    const { buildProfile } = await import("./extract/index.js");
+    const capFile = path.join(dir, ".watercolor", "capture.json");
+    if (!(await exists(capFile))) {
+      log.error(`No capture in ${dir}. Run \`watercolor extract <url> -o ${dir}\` first.`);
+      process.exit(1);
+    }
+    const p = await buildProfile(await readJson(capFile), path.resolve(dir));
+    await writeJson(path.join(dir, "brand.json"), p);
+    const sp = path.join(dir, "strategy.json");
+    const mode = (await exists(sp)) ? (await readJson<BrandStrategy>(sp)).mode : "extract";
+    await writeBrief(p, dir, mode);
+    log.ok("brand.json and brief rebuilt");
+  });
+
+program
   .command("brief")
   .argument("[dir]", "brand directory", "brand")
   .option("-m, --mode <mode>", "extract | extend | evolve | reimagine")

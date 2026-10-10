@@ -381,7 +381,10 @@ export function imagerySection(b: ResolvedBrand) {
   if (md.shaders.length) rows.push(["WebGL shaders", `${md.shaders.length} GLSL sources in \`captured/shaders/\``]);
   if (md.recordings.length) rows.push(["Scroll recording", md.recordings.map((r) => `\`${r.path}\``).join(", ")]);
   if (rows.length) L.push(table(["Media", ""], rows), "");
-  if (im.customerLogos.length) L.push(`**Customer logos shown:** ${im.customerLogos.map((c) => c.name).join(", ")}`, "");
+  if (im.customerLogos.length) {
+    const named = im.customerLogos.map((c) => c.name).filter(Boolean);
+    L.push(`**Customer logos shown:** ${im.customerLogos.length} captured to \`captured/customer-logos/\`${named.length ? ` — ${named.join(", ")}` : ""}.`, "");
+  }
   return L.join("\n");
 }
 

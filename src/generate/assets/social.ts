@@ -4,7 +4,7 @@ import type { Hex } from "../../profile/schema.js";
 import type { Renderer } from "../../render/renderer.js";
 import { write } from "../../util/fs.js";
 import { readableOn, isDark, mix } from "../../util/color.js";
-import { esc, clip, firstSentence, typeStyle } from "../html.js";
+import { esc, clip, firstSentence, typeStyle, headlineHtml } from "../html.js";
 import { logoMarkup } from "./logo.js";
 
 export interface SocialContext {
@@ -50,13 +50,18 @@ function headlineCss(b: ResolvedBrand, size: number) {
 }
 
 function copy(b: ResolvedBrand) {
-  const headline = firstSentence(b.copy.taglines[0] ?? b.copy.headline);
+  const full = b.copy.taglines[0] ?? b.copy.headline;
+  // Brands with two-tone headlines keep the continuation (it's the signature); others get the first sentence.
+  const headline = b.profile.typography.twoTone && !b.copy.taglines[0] ? clip(full, 96) : firstSentence(full);
   const sub = clip(b.copy.subhead || b.description, 150);
-  const eyebrow = b.strategy.company?.category ?? b.profile.company.categories[0]?.name ?? b.domain;
-  return { headline: clip(headline, 90), sub, eyebrow };
+  const cat = (b.strategy.company?.category ?? "").split(/[(\-–—,]/)[0].trim();
+  const eyebrow = cat && cat.length <= 28 ? cat : b.profile.company.categories[0]?.name ?? b.domain;
+  return { headline: b.profile.typography.twoTone ? headline : clip(headline, 90), sub, eyebrow };
 }
 
 const art = (b: ResolvedBrand, c: SocialContext, prefer: string[]) => {
+  // The brand's own animated surface (captured WebGL/canvas still) beats any generated pattern.
+  if (b.signatureArt && prefer.includes("mesh-gradient")) return `url('${c.asset(b.signatureArt)}') center/cover, ${b.roles.background}`;
   for (const p of prefer) if (c.hasPattern(p)) return `url('${c.asset(`patterns/${p}.png`)}')`;
   return `linear-gradient(120deg, ${b.gradient.join(", ")})`;
 };
@@ -78,7 +83,7 @@ export const SOCIAL_SPECS: Spec[] = [
     <div>${logoMarkup(b, { on: bg, height: 40 })}</div>
     <div>
       <div style="${typeStyle(b, "eyebrow", 1.35)};color:${b.monochrome ? b.roles.muted : b.roles.primary};margin-bottom:22px">${esc(eyebrow)}</div>
-      <h1 class="h" style="${headlineCss(b, size)};max-width:700px">${esc(headline)}</h1>
+      <h1 class="h" style="${headlineCss(b, size)};max-width:700px">${headlineHtml(b, headline)}</h1>
     </div>
     <div style="${typeStyle(b, "body", 1.2)};color:${b.roles.muted}">${esc(b.domain)}</div>
   </div>
@@ -137,7 +142,7 @@ export const SOCIAL_SPECS: Spec[] = [
 <div style="position:absolute;inset:0;background:${art(b, c, ["watercolor-wash", "mesh-gradient", "signature-gradient"])} center/cover"></div>
 <div style="position:absolute;right:80px;top:50%;transform:translateY(-50%);max-width:760px;padding:44px 52px;background:${bg};border-radius:${Math.min(24, b.radius.lg * 2)}px;box-shadow:0 30px 80px -30px rgba(0,0,0,.35)">
   <div style="margin-bottom:22px">${logoMarkup(b, { on: bg, height: 32 })}</div>
-  <div class="h" style="${headlineCss(b, 46)}">${esc(headline)}</div>
+  <div class="h" style="${headlineCss(b, 46)}">${headlineHtml(b, headline)}</div>
 </div>`);
     },
   },
@@ -154,7 +159,7 @@ export const SOCIAL_SPECS: Spec[] = [
       return page(b, c, 1584, 396, bg, fg, `
 <div style="position:absolute;right:0;top:0;bottom:0;width:58%;background:${art(b, c, ["mesh-gradient", "signature-gradient"])} center/cover;-webkit-mask-image:linear-gradient(90deg,transparent,#000 40%)"></div>
 <div style="position:absolute;left:420px;top:0;bottom:0;display:flex;align-items:center;max-width:820px">
-  <div class="h" style="${headlineCss(b, 48)}">${esc(headline)}</div>
+  <div class="h" style="${headlineCss(b, 48)}">${headlineHtml(b, headline, true)}</div>
 </div>`);
     },
   },
@@ -171,7 +176,7 @@ export const SOCIAL_SPECS: Spec[] = [
 <div style="position:absolute;inset:0;display:grid;grid-template-rows:1fr 420px">
   <div style="padding:80px 80px 0;display:flex;flex-direction:column;justify-content:space-between">
     ${logoMarkup(b, { on: bg, height: 44 })}
-    <div style="padding-bottom:56px"><h1 class="h" style="${headlineCss(b, fitHeadline(headline, 1100))}">${esc(headline)}</h1>
+    <div style="padding-bottom:56px"><h1 class="h" style="${headlineCss(b, fitHeadline(headline, 1100))}">${headlineHtml(b, headline)}</h1>
     <p class="p" style="${typeStyle(b, "body-lg", 1.5)};color:${b.roles.muted};margin-top:26px;max-width:860px">${esc(clip(sub, 110))}</p></div>
   </div>
   <div style="background:${art(b, c, ["watercolor-wash", "mesh-gradient", "signature-gradient"])} center/cover"></div>
@@ -193,7 +198,7 @@ export const SOCIAL_SPECS: Spec[] = [
 <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,${bg} 78%)"></div>
 <div style="position:absolute;left:84px;right:84px;bottom:300px">
   <div style="margin-bottom:48px">${logoMarkup(b, { on: bg, height: 52 })}</div>
-  <h1 class="h" style="${headlineCss(b, 104)}">${esc(headline)}</h1>
+  <h1 class="h" style="${headlineCss(b, headline.length > 60 ? 84 : 104)}">${headlineHtml(b, headline, true)}</h1>
   <div style="margin-top:56px;display:inline-block;${typeStyle(b, "label", 1.9)};background:${b.monochrome ? fg : b.roles.primary};color:${b.monochrome ? bg : b.roles.primaryForeground};padding:26px 44px;border-radius:${b.radius.button}">${esc(b.copy.cta)}</div>
 </div>`);
     },

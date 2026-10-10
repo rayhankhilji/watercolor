@@ -40,7 +40,7 @@ export async function buildProfile(capture: CaptureResult, outDir: string): Prom
 
   log.step("Reading voice & company signals");
   const voice = extractVoice(capture);
-  const company = extractCompany(capture, voice, imagery.customerLogos.map((c) => c.name));
+  const company = extractCompany(capture, voice, imagery.customerLogos.map((c) => c.name).filter(Boolean));
 
   const warnings: string[] = [...capture.errors];
   if (!logo.primary) warnings.push("No logo candidate found — add one to brand/captured/logos and re-run `watercolor build`.");

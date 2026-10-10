@@ -33,6 +33,8 @@ export interface ResolvedBrand {
   /** Signature gradient stops (from the site's own gradients / shader canvas, else derived). */
   gradient: Hex[];
   gradientIsCaptured: boolean;
+  /** Still of the brand's signature animated canvas (WebGL hero), relative to the kit — the most authentic art. */
+  signatureArt?: string;
   fonts: { display: FontRef; body: FontRef; mono: FontRef };
   type: Record<string, TypeStyle>;
   radius: { none: number; sm: number; md: number; lg: number; xl: number; full: number; button: string; card: string };
@@ -167,7 +169,10 @@ export async function resolveBrand(profile: BrandProfile, strategy: BrandStrateg
   };
   if (o.radius) radius.md = parseFloat(o.radius);
   const primaryBtn = profile.components.buttons.find((b) => b.variant === "primary") ?? profile.components.buttons[0];
-  radius.button = primaryBtn?.styles["border-top-left-radius"] ?? (hasFull && profile.shape.language === "pill" ? "9999px" : `${radius.md}px`);
+  const rawBtn = primaryBtn?.styles["border-top-left-radius"];
+  const btnH = parseFloat(primaryBtn?.styles["height"] ?? "0");
+  // A radius of at least half the height is a pill, whatever the pixel value says.
+  radius.button = rawBtn ? (btnH && parseFloat(rawBtn) >= btnH / 2 - 1 ? "9999px" : rawBtn) : hasFull && profile.shape.language === "pill" ? "9999px" : `${radius.md}px`;
   radius.card = profile.components.cards[0]?.styles["border-top-left-radius"] ?? `${radius.lg}px`;
 
   // Motion tokens
@@ -214,6 +219,7 @@ export async function resolveBrand(profile: BrandProfile, strategy: BrandStrateg
     ramps,
     gradient,
     gradientIsCaptured,
+    signatureArt: pickSignatureArt(profile),
     fonts: { display, body, mono },
     type,
     radius,
@@ -240,4 +246,12 @@ export function logoFor(brand: ResolvedBrand, bg: Hex): { svg?: string; recolor?
     return ok ? { svg } : { svg, recolor: "#ffffff" };
   }
   return { svg };
+}
+
+function pickSignatureArt(p: BrandProfile): string | undefined {
+  // Largest WebGL/2D canvas still that is colorful (not a blank or monochrome UI canvas).
+  const c = [...p.media.canvases]
+    .filter((x) => x.poster && x.poster.endsWith(".png") && x.width * x.height >= 300_000)
+    .sort((a, b) => b.width * b.height - a.width * a.height)[0];
+  return c?.poster;
 }

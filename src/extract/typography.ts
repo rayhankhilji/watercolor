@@ -94,6 +94,8 @@ export function cleanFamilyName(name: string) {
   const KNOWN: Record<string, string> = { sohne: "Söhne", "sohne mono": "Söhne Mono", "sohne breit": "Söhne Breit", "gt america": "GT America", "gt walsheim": "GT Walsheim", "abc diatype": "ABC Diatype", "pp neue montreal": "PP Neue Montreal", "sf pro display": "SF Pro Display", "sf pro text": "SF Pro Text", "ibm plex sans": "IBM Plex Sans", "ibm plex mono": "IBM Plex Mono" };
   if (KNOWN[n.toLowerCase()]) return KNOWN[n.toLowerCase()];
   if (n === n.toLowerCase()) n = n.replace(/\b\w/g, (c) => c.toUpperCase());
+  // "SourceCodePro" → "Source Code Pro"
+  if (!/\s/.test(n) && /[a-z][A-Z]/.test(n)) n = n.replace(/([a-z])([A-Z])/g, "$1 $2");
   return n;
 }
 
@@ -294,5 +296,15 @@ export function extractTypography(capture: CaptureResult, css: CssSummary): Typo
     .slice(0, 6);
 
   const measure = capture.pages[0].raw.measure ? Math.round(capture.pages[0].raw.measure as number) : undefined;
-  return { families, styles: named, scale: { sizes, base, ratio, ratioName }, features, measure };
+
+  // Two-tone headlines: ≥2 headings whose text runs in two clearly different colors.
+  type H = { tag: string; text: string; colors?: string[] };
+  const twoToned = capture.pages.flatMap((p) => p.raw.headings as H[]).filter((h) => (h.tag === "h1" || h.tag === "h2") && (h.colors?.length ?? 0) >= 2);
+  let twoTone: TypographySystem["twoTone"];
+  if (twoToned.length >= 2) {
+    const a = parseColor(twoToned[0].colors![0])?.hex;
+    const b2 = parseColor(twoToned[0].colors![1])?.hex;
+    if (a && b2 && a !== b2) twoTone = { primary: a, secondary: b2, examples: twoToned.slice(0, 4).map((h) => h.text) };
+  }
+  return { families, styles: named, scale: { sizes, base, ratio, ratioName }, features, measure, twoTone };
 }

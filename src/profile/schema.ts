@@ -218,6 +218,8 @@ export interface TypographySystem {
   features: string[];
   /** Typical measure of body copy in characters. */
   measure?: number;
+  /** Headline set in two colors (e.g. statement in ink, continuation in slate). */
+  twoTone?: { primary: Hex; secondary: Hex; examples: string[] };
 }
 
 /* ------------------------------------------------------- spacing & shape */
