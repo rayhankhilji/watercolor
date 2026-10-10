@@ -238,7 +238,9 @@ export async function capture(opts: CaptureOptions): Promise<CaptureResult> {
       const shot = path.join(dirs.shots, `${tag}-desktop.png`);
       await page.screenshot({ path: shot, type: "png" });
       const full = path.join(dirs.shots, `${tag}-desktop-full.jpg`);
-      await page.screenshot({ path: full, type: "jpeg", quality: 82, fullPage: true, timeout: 30_000 }).catch(() => undefined);
+      // Stitch viewport tiles instead of a native full-page shot: resizing the viewport resets
+      // scroll-triggered (GSAP/IntersectionObserver) content, leaving blank pages.
+      if (!(await stitchedFullPage(page, full))) await page.screenshot({ path: full, type: "jpeg", quality: 82, fullPage: true, timeout: 30_000 }).catch(() => undefined);
       const shaders = (await page.evaluate(() => (window as unknown as { __wc?: { shaders: { type: string; source: string }[] } }).__wc?.shaders ?? []).catch(() => [])) as { type: string; source: string }[];
       for (const s of shaders) {
         const h = hash(s.source);
@@ -796,4 +798,55 @@ function rgbToHex(css: string) {
   const m = css.match(/\d+(\.\d+)?/g);
   if (!m || m.length < 3 || (m.length > 3 && Number(m[3]) === 0)) return "#ffffff";
   return "#" + m.slice(0, 3).map((v) => Math.round(Number(v)).toString(16).padStart(2, "0")).join("");
+}
+
+async function stitchedFullPage(page: Page, out: string, maxTiles = 24): Promise<boolean> {
+  const { runFfmpeg, findFfmpeg } = await import("../render/ffmpeg.js");
+  const bin = await findFfmpeg();
+  if (!bin) return false;
+  const vp = page.viewportSize();
+  if (!vp) return false;
+  const docH = await page.evaluate(() => document.documentElement.scrollHeight);
+  const tiles = Math.min(maxTiles, Math.ceil(docH / vp.height));
+  const tmp = await mkdtemp(path.join(tmpdir(), "wc-stitch-"));
+  try {
+    const files: string[] = [];
+    for (let i = 0; i < tiles; i++) {
+      const y = Math.min(i * vp.height, Math.max(0, docH - vp.height));
+      await page.evaluate((top) => window.scrollTo(0, top), y);
+      await page.waitForTimeout(i === 0 ? 300 : 450);
+      if (i === 1) {
+        // Hide fixed/sticky chrome after the first tile so headers don't repeat.
+        await page.evaluate(() => {
+          for (const el of Array.from(document.querySelectorAll("body *"))) {
+            const pos = getComputedStyle(el).position;
+            if (pos === "fixed" || pos === "sticky") (el as HTMLElement).style.setProperty("visibility", "hidden", "important");
+          }
+        });
+      }
+      const f = path.join(tmp, `${String(i).padStart(3, "0")}.jpg`);
+      await page.screenshot({ path: f, type: "jpeg", quality: 85 });
+      // The last tile overlaps the previous one; crop the overlap away.
+      const overlap = i > 0 && i === tiles - 1 ? i * vp.height - y : 0;
+      files.push(overlap > 0 ? `${f}#${overlap}` : f);
+    }
+    const inputs = files.flatMap((f) => ["-i", f.split("#")[0]]);
+    const crops = files.map((f, i) => {
+      const ov = Number(f.split("#")[1] || 0);
+      return ov ? `[${i}:v]crop=iw:ih-${ov}:0:${ov}[t${i}]` : `[${i}:v]null[t${i}]`;
+    });
+    const graph = `${crops.join(";")};${files.map((_, i) => `[t${i}]`).join("")}vstack=inputs=${files.length}`;
+    if (files.length === 1) await copyFile(files[0].split("#")[0], out);
+    else await runFfmpeg(bin, [...inputs, "-filter_complex", graph, "-q:v", "3", out]);
+    return true;
+  } catch (e) {
+    log.debug(`stitch: ${(e as Error).message}`);
+    return false;
+  } finally {
+    await page.evaluate(() => {
+      for (const el of Array.from(document.querySelectorAll("body *"))) (el as HTMLElement).style.removeProperty("visibility");
+      window.scrollTo(0, 0);
+    }).catch(() => undefined);
+    await rm(tmp, { recursive: true, force: true });
+  }
 }

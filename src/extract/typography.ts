@@ -96,7 +96,9 @@ export function cleanFamilyName(name: string) {
   // Restore well-known diacritics / casing.
   const KNOWN: Record<string, string> = { sohne: "Söhne", "sohne mono": "Söhne Mono", "sohne breit": "Söhne Breit", "gt america": "GT America", "gt walsheim": "GT Walsheim", "abc diatype": "ABC Diatype", "pp neue montreal": "PP Neue Montreal", "sf pro display": "SF Pro Display", "sf pro text": "SF Pro Text", "ibm plex sans": "IBM Plex Sans", "ibm plex mono": "IBM Plex Mono" };
   if (KNOWN[n.toLowerCase()]) return KNOWN[n.toLowerCase()];
-  if (n === n.toLowerCase()) n = n.replace(/\b\w/g, (c) => c.toUpperCase());
+  if (n === n.toLowerCase() || /^[A-Z][a-z]+ [a-z]/.test(n)) n = n.replace(/\b\w/g, (c) => c.toUpperCase());
+  // Foundry/initialism prefixes stay uppercase: EB Garamond, IBM Plex, DM Sans, PT Serif, GT America…
+  n = n.replace(/^(eb|ibm|dm|pt|gt|abc|pp|tt|sf|nb)\b/i, (m) => m.toUpperCase());
   // "SourceCodePro" → "Source Code Pro"
   if (!/\s/.test(n) && /[a-z][A-Z]/.test(n)) n = n.replace(/([a-z])([A-Z])/g, "$1 $2");
   // Brand-aliased open fonts ("NotionInter", "Vercel Geist") → the real family.

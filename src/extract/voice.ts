@@ -109,7 +109,14 @@ export function extractIdentity(capture: CaptureResult): Identity {
   const org = (home.jsonld as unknown[]).flatMap(flattenLd).find((x) => /Organization|Corporation|SoftwareApplication|WebSite/i.test(String(x["@type"]))) as Record<string, unknown> | undefined;
   const titleParts = (home.title as string).split(/\s[|–—:·-]\s/).map((s) => s.trim()).filter(Boolean);
   const byDomain = titleParts.find((t) => t.toLowerCase().replace(/\s/g, "").includes(domainStem.toLowerCase()));
+  const site = meta["og:site_name"];
+  // Prefer the fuller title segment that contains the site name ("Wispr Flow" over "Flow").
+  const fuller = site ? titleParts.find((t) => t !== site && t.split(/\s+/).length <= 3 && new RegExp(`\\b${site.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(t)) : undefined;
+  // A short title segment that spells the domain ("Wispr Flow" ↔ wisprflow.ai) is the most reliable name.
+  const domainName = byDomain && byDomain.split(/\s+/).length <= 3 ? byDomain : undefined;
   const name =
+    fuller ||
+    domainName ||
     meta["og:site_name"] ||
     (org && typeof org.name === "string" ? org.name : "") ||
     byDomain ||

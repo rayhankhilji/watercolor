@@ -293,8 +293,8 @@ export async function extractImagery(capture: CaptureResult, outDir: string): Pr
   const notACustomer = (name: string) =>
     !name || name.toLowerCase().includes(brandWord) || /^(x|twitter|instagram|linkedin|youtube|discord|tiktok|facebook|github|threads|bluesky|reddit)$/i.test(name) || /consent|cookie|badge|compliance|soc ?2|hipaa|gdpr|iso ?27001|award|g2|capterra|app store|google play/i.test(name);
   for (const p of capture.pages) {
-    // Brand/press pages show the company's own logos in grids — not customers.
-    const isBrandPage = p.kind === "brand";
+    // Brand/press pages show the company's own logos; about/careers pages show investors — not customers.
+    const isBrandPage = !["home", "customers", "product", "enterprise", "pricing"].includes(p.kind);
     for (const im of p.raw.images as RawImg[]) {
       if (seen.has(im.src)) continue;
       seen.add(im.src);
@@ -344,14 +344,24 @@ export async function extractImagery(capture: CaptureResult, outDir: string): Pr
 }
 
 function cleanLogoName(s: string) {
-  return (s || "")
-    .replace(/\b(logo|logotype|lockup|wordmark|icon|image|customer|brand|svg|png|webp|white|black|dark|light|color|colour|mono|rgb|cmyk|slate|gray|grey|horizontal|vertical|primary|full|small|large|default)\b/gi, "")
+  let t = s || "";
+  try {
+    t = decodeURIComponent(t);
+  } catch {
+    /* keep as is */
+  }
+  return t
+    .replace(/[-_]+/g, " ")
+    .replace(/\b[0-9a-f]{12,}\b/gi, "")
+    .replace(/\(\d+\)/g, "")
+    .replace(/\b(logo|logotype|lockup|wordmark|icon|image|customer|brand|svg|png|webp|white|black|dark|light|color|colour|mono|rgb|cmyk|slate|gray|grey|horizontal|vertical|primary|full|small|large|default|lumen|inverse|inverted|reverse|knockout|negative|positive|transparent|alt|v\d)\b/gi, "")
     .replace(/\b\d{3,}\b/g, "")
     .replace(/^\s*(for|by|with|from)\s+/i, "")
     .replace(/[-_]+/g, " ")
     .replace(/\s+/g, " ")
     .trim()
-    .replace(/^\w/, (c) => c.toUpperCase());
+    .replace(/^\w/, (c) => c.toUpperCase())
+    .replace(/^([A-Z][a-z]*)( [a-z][a-z]+)+$/, (m) => m.replace(/\b\w/g, (c) => c.toUpperCase()));
 }
 
 function classifyImage(im: { alt: string; natural: { w: number; h: number }; display: { w: number; h: number }; context: string; src: string }, format: string): ImageAsset["kind"] {
