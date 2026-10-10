@@ -338,7 +338,9 @@ export async function extractImagery(capture: CaptureResult, outDir: string): Pr
 
 function cleanLogoName(s: string) {
   return (s || "")
-    .replace(/\b(logo|logotype|wordmark|icon|image|customer|brand|svg|png|white|black|dark|light|color|colour|mono)\b/gi, "")
+    .replace(/\b(logo|logotype|lockup|wordmark|icon|image|customer|brand|svg|png|webp|white|black|dark|light|color|colour|mono|rgb|cmyk|slate|gray|grey|horizontal|vertical|primary|full|small|large|default)\b/gi, "")
+    .replace(/\b\d{3,}\b/g, "")
+    .replace(/^\s*(for|by|with|from)\s+/i, "")
     .replace(/[-_]+/g, " ")
     .replace(/\s+/g, " ")
     .trim()

@@ -96,6 +96,12 @@ export function cleanFamilyName(name: string) {
   if (n === n.toLowerCase()) n = n.replace(/\b\w/g, (c) => c.toUpperCase());
   // "SourceCodePro" → "Source Code Pro"
   if (!/\s/.test(n) && /[a-z][A-Z]/.test(n)) n = n.replace(/([a-z])([A-Z])/g, "$1 $2");
+  // Brand-aliased open fonts ("NotionInter", "Vercel Geist") → the real family.
+  const words = n.split(" ");
+  for (let i = 1; i < words.length; i++) {
+    const rest = words.slice(i).join(" ");
+    if (OPEN_FONTS.test(rest)) return rest;
+  }
   return n;
 }
 

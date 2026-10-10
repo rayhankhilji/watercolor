@@ -229,6 +229,8 @@ export async function capture(opts: CaptureOptions): Promise<CaptureResult> {
       await settle(page);
       await dismissOverlays(page);
       await autoScroll(page);
+      // Consent banners often appear late (after scroll or a timer) — dismiss again before measuring.
+      await dismissOverlays(page);
       await page.evaluate(() => window.scrollTo(0, 0));
       await page.waitForTimeout(700);
       const raw = (await page.evaluate(collectPage, { maxElements: 9000, brandHint, pageUrl: url })) as RawPage;
@@ -289,6 +291,7 @@ export async function capture(opts: CaptureOptions): Promise<CaptureResult> {
       await settle(mp);
       await dismissOverlays(mp);
       await autoScroll(mp);
+      await dismissOverlays(mp);
       await mp.evaluate(() => window.scrollTo(0, 0));
       await mp.waitForTimeout(500);
       const shot = path.join(dirs.shots, "home-mobile.png");
@@ -314,6 +317,7 @@ export async function capture(opts: CaptureOptions): Promise<CaptureResult> {
       await settle(rp);
       await dismissOverlays(rp);
       await rp.waitForTimeout(1500);
+      await dismissOverlays(rp);
       await rp.evaluate(smoothScrollThrough, { pxPerSecond: 700, maxMs: 16000 });
       await rp.waitForTimeout(600);
       const video = rp.video();

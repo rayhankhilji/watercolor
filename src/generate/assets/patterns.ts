@@ -259,7 +259,7 @@ export async function renderPatterns(b: ResolvedBrand, r: Renderer, outDir: stri
     if (p.render) files.push(await write(path.join(dir, "source", `${p.name}.html`), p.render));
     if (p.tile) files.push(await write(path.join(dir, "tiles", `${p.name}-tile.svg`), p.tile));
     const html = p.render ?? `<!doctype html><html><head><style>${fontCss}html,body{margin:0;width:${W}px;height:${H}px;overflow:hidden}svg{display:block}</style></head><body>${p.svg}</body></html>`;
-    files.push(await r.png(html, path.join(dir, `${p.name}.png`), { width: W, height: H, name: `pattern-${p.name}` }));
+    files.push(await r.png(html, path.join(dir, `${p.name}.png`), { width: W, height: H, name: `pattern-${p.name}`, gpu: !!p.render }));
   }
   return files;
 }

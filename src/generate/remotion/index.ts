@@ -42,7 +42,9 @@ export async function scaffoldRemotion(dir: string) {
     const n = `video-${videos.length + 1}.mp4`;
     if (await copy(path.join(dir, v.path!), n)) videos.push(n);
   }
-  const gradientLoop = await copy(path.join(dir, "motion/gradient-loop.mp4"), "gradient-loop.mp4");
+  // The brand's real animated surface (captured canvas) wins over our recreation.
+  const sig = b.profile.media.canvases.find((c) => c.poster && c.poster === b.signatureArt && c.recording);
+  const gradientLoop = (sig && (await copy(path.join(dir, sig.recording!), "signature.mp4"))) ?? (await copy(path.join(dir, "motion/gradient-loop.mp4"), "gradient-loop.mp4"));
 
   const brand = {
     name: b.name,

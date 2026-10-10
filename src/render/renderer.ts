@@ -4,7 +4,7 @@ import { pathToFileURL } from "node:url";
 import { mkdtemp, rm, writeFile, copyFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { write, ensureDir } from "../util/fs.js";
-import { encodeFrames } from "./ffmpeg.js";
+import { encodeFrames, extractFrame } from "./ffmpeg.js";
 import { log } from "../util/log.js";
 
 /**
@@ -13,6 +13,8 @@ import { log } from "../util/log.js";
  */
 export class Renderer {
   private pages = new Map<number, Page>();
+  /** Lazily launched new-headless Chrome with real GPU (Metal/D3D/Vulkan) for WebGL scenes; null if unavailable. */
+  private gpuBrowser?: Browser | null;
 
   private constructor(
     private browser: Browser,
@@ -27,17 +29,31 @@ export class Renderer {
 
   async close() {
     await this.browser.close();
+    if (this.gpuBrowser) await this.gpuBrowser.close();
   }
 
-  private async open(html: string, name: string, width: number, height: number, scale = 1): Promise<Page> {
+  private async gpu(): Promise<Browser> {
+    if (this.gpuBrowser === undefined) {
+      try {
+        this.gpuBrowser = await chromium.launch({ channel: "chromium", args: ["--font-render-hinting=none"] });
+      } catch {
+        this.gpuBrowser = null;
+      }
+    }
+    return this.gpuBrowser ?? this.browser;
+  }
+
+  private async open(html: string, name: string, width: number, height: number, scale = 1, gpu = false): Promise<Page> {
     const file = path.isAbsolute(name) ? `${name}.html` : path.join(this.workDir, `${name}.html`);
     await write(file, html);
     // Pages are reused per device-scale-factor: creating a page costs ~400ms, navigating ~30ms.
-    let page = this.pages.get(scale);
+    const key = gpu ? -scale : scale;
+    let page = this.pages.get(key);
     if (!page || page.isClosed()) {
-      page = await this.browser.newPage({ viewport: { width, height }, deviceScaleFactor: scale });
+      const browser = gpu ? await this.gpu() : this.browser;
+      page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: scale });
       page.setDefaultTimeout(120_000);
-      this.pages.set(scale, page);
+      this.pages.set(key, page);
     } else await page.setViewportSize({ width, height });
     await page.goto(pathToFileURL(file).href, { waitUntil: "load" });
     await page.evaluate(() => (document as unknown as { fonts: { ready: Promise<unknown> } }).fonts.ready);
@@ -55,8 +71,8 @@ export class Renderer {
     }
   }
 
-  async png(html: string, out: string, o: { width: number; height: number; scale?: number; transparent?: boolean; fullPage?: boolean; name?: string }) {
-    const page = await this.open(html, o.name ?? path.basename(out, path.extname(out)), o.width, o.height, o.scale ?? 1);
+  async png(html: string, out: string, o: { width: number; height: number; scale?: number; transparent?: boolean; fullPage?: boolean; name?: string; gpu?: boolean }) {
+    const page = await this.open(html, o.name ?? path.basename(out, path.extname(out)), o.width, o.height, o.scale ?? 1, !!o.gpu);
     try {
       await ensureDir(path.dirname(out));
       await page.screenshot({ path: out, omitBackground: !!o.transparent, fullPage: !!o.fullPage, type: out.endsWith(".jpg") ? "jpeg" : "png", ...(out.endsWith(".jpg") ? { quality: 92 } : {}) });
@@ -90,7 +106,7 @@ export class Renderer {
    * which puts the scene at an exact time (we pause all WAAPI animations and drive time).
    */
   async video(html: string, o: { width: number; height: number; fps: number; durationMs: number; mp4?: string; webm?: string; gif?: string; gifWidth?: number; poster?: string; name: string; transparent?: boolean; canvas?: string }) {
-    const page = await this.open(html, o.name, o.width, o.height, 1);
+    const page = await this.open(html, o.name, o.width, o.height, 1, !!o.canvas);
     const tmp = await mkdtemp(path.join(tmpdir(), "wc-frames-"));
     try {
       const frames = Math.round((o.durationMs / 1000) * o.fps);
@@ -116,16 +132,19 @@ export class Renderer {
               const out: string[] = [];
               for (let k = start; k < start + n; k++) {
                 w.__seek((k / fps) * 1000);
-                out.push(c.toDataURL("image/png"));
+                out.push(c.toDataURL("image/jpeg", 0.95));
               }
               return out;
             },
             { sel: o.canvas, start: i, n: Math.min(batch, frames - i), fps: o.fps },
           );
-          for (const [k, u] of urls.entries()) await writeFile(path.join(tmp, `${String(i + k).padStart(5, "0")}.png`), Buffer.from(u.split(",")[1], "base64"));
+          for (const [k, u] of urls.entries()) await writeFile(path.join(tmp, `${String(i + k).padStart(5, "0")}.jpg`), Buffer.from(u.split(",")[1], "base64"));
         }
-        if (o.poster) await copyFile(path.join(tmp, `${String(Math.floor(frames * 0.66)).padStart(5, "0")}.png`), o.poster);
-        return await encodeFrames({ fps: o.fps, input: path.join(tmp, "%05d.png"), mp4: o.mp4, webm: o.webm, gif: o.gif, gifWidth: o.gifWidth, scale: { w: o.width, h: o.height } });
+        const made = await encodeFrames({ fps: o.fps, input: path.join(tmp, "%05d.jpg"), mp4: o.mp4, webm: o.webm, gif: o.gif, gifWidth: o.gifWidth, scale: { w: o.width, h: o.height } });
+        // Poster from the upscaled video so it matches the delivered resolution.
+        if (o.poster && o.mp4 && made.includes(o.mp4)) await extractFrame(o.mp4, o.poster, (o.durationMs / 1000) * 0.66).catch(() => undefined);
+        else if (o.poster) await copyFile(path.join(tmp, `${String(Math.floor(frames * 0.66)).padStart(5, "0")}.jpg`), o.poster);
+        return made;
       }
       for (let i = 0; i < frames; i++) {
         const t = (i / o.fps) * 1000;

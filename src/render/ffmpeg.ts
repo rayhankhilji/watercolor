@@ -62,12 +62,12 @@ export async function encodeFrames(o: EncodeOptions): Promise<string[]> {
   const out: string[] = [];
   const sc = o.scale ? `scale=${o.scale.w}:${o.scale.h}:flags=lanczos,` : "";
   if (o.mp4) {
-    await runFfmpeg(bin, ["-framerate", String(o.fps), "-i", o.input, "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "16", "-preset", "slow", "-movflags", "+faststart", "-vf", `${sc}pad=ceil(iw/2)*2:ceil(ih/2)*2`, o.mp4]);
+    await runFfmpeg(bin, ["-framerate", String(o.fps), "-i", o.input, "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "17", "-preset", "medium", "-movflags", "+faststart", "-vf", `${sc}pad=ceil(iw/2)*2:ceil(ih/2)*2`, o.mp4]);
     out.push(o.mp4);
   }
   if (o.webm) {
     const pix = o.alpha ? ["-pix_fmt", "yuva420p", "-auto-alt-ref", "0"] : ["-pix_fmt", "yuv420p"];
-    await runFfmpeg(bin, ["-framerate", String(o.fps), "-i", o.input, ...(o.scale ? ["-vf", sc.slice(0, -1)] : []), "-c:v", "libvpx-vp9", ...pix, "-b:v", "0", "-crf", "28", "-row-mt", "1", o.webm]).catch((e) => log.debug(`webm: ${e.message}`));
+    await runFfmpeg(bin, ["-framerate", String(o.fps), "-i", o.input, ...(o.scale ? ["-vf", sc.slice(0, -1)] : []), "-c:v", "libvpx-vp9", ...pix, "-b:v", "0", "-crf", "30", "-deadline", "good", "-cpu-used", "5", "-row-mt", "1", o.webm]).catch((e) => log.debug(`webm: ${e.message}`));
     out.push(o.webm);
   }
   if (o.gif) {
