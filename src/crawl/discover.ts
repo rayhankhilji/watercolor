@@ -54,8 +54,12 @@ export function discoverPages(homeUrl: string, links: { href: string; text: stri
     if (!sameSite(home.href, u.href)) continue;
     if (/\.(pdf|zip|png|jpe?g|svg|mp4|webm|gif)$/i.test(u.pathname)) continue;
     // Skip deep links (blog posts, docs pages) — we want hub pages.
-    const depth = u.pathname.split("/").filter(Boolean).length;
+    // Locale prefixes (/gb/, /en-us/, /fr/) don't count toward depth.
+    const segs = u.pathname.split("/").filter(Boolean);
+    if (segs.length && /^[a-z]{2}(-[a-z]{2})?$/i.test(segs[0])) segs.shift();
+    const depth = segs.length;
     if (depth === 0) continue;
+    // Hub pages only: one level deep (brand/press kits may sit one level lower).
     u.hash = "";
     u.search = "";
     let kind: PageKind | null = null;
@@ -75,6 +79,7 @@ export function discoverPages(homeUrl: string, links: { href: string; text: stri
       }
     }
     if (!kind) continue;
+    if (depth > 2 || (depth === 2 && kind !== "brand")) continue;
     score -= Math.max(0, depth - 1) * 2;
     // Prefer the subdomain-free version of a page.
     if (u.hostname !== home.hostname) score -= 1;
