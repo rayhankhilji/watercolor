@@ -2,7 +2,7 @@ import path from "node:path";
 import type { CaptureResult } from "../crawl/crawl.js";
 import type { FontFamily, FontRole, TypeStyle, TypographySystem, Hex } from "../profile/schema.js";
 import type { CssSummary } from "../util/css.js";
-import { parseColor } from "../util/color.js";
+import { parseColor, oklch, isNeutral } from "../util/color.js";
 import { round } from "../util/color.js";
 
 /** Proprietary → open-license families with a similar skeleton and texture. */
@@ -309,25 +309,28 @@ export function extractTypography(capture: CaptureResult, css: CssSummary): Typo
   const measure = capture.pages[0].raw.measure ? Math.round(capture.pages[0].raw.measure as number) : undefined;
 
   // Two-tone headlines: ≥2 headings whose text runs in two clearly different colors.
-  // Each heading's colors are ordered by characters set; a real two-tone treatment gives the
-  // second color a substantial share (not a stray badge or ticker inside the heading).
+  // Two-tone headlines: a statement in ink + a continuation in a second color. Group headings by
+  // their darker (statement) color; continuations can be mid-animation when captured (e.g. a color
+  // shimmer), so prefer an opaque, neutral continuation color that recurs.
   type C = { c: string; n: number } | string;
   type H = { tag: string; text: string; colors?: C[] };
-  const pairs = new Map<string, { a: string; b: string; texts: Set<string> }>();
+  const groups = new Map<string, { texts: Set<string>; seconds: Map<string, number> }>();
   for (const h of capture.pages.flatMap((p) => p.raw.headings as H[])) {
     if (!(h.tag === "h1" || h.tag === "h2") || !h.colors || h.colors.length < 2) continue;
-    const cs = h.colors.map((x) => (typeof x === "string" ? { c: x, n: 1 } : x));
-    const total = cs.reduce((s, x) => s + x.n, 0);
-    if (typeof h.colors[0] !== "string" && cs[1].n / total < 0.2) continue;
-    const a = parseColor(cs[0].c)?.hex;
-    const b2 = parseColor(cs[1].c)?.hex;
-    if (!a || !b2 || a === b2) continue;
-    const key = a + b2;
-    const e = pairs.get(key) ?? { a, b: b2, texts: new Set<string>() };
-    e.texts.add(h.text);
-    pairs.set(key, e);
+    const cs = h.colors.map((x) => (typeof x === "string" ? { c: x, n: 1 } : x)).slice(0, 2);
+    const total = cs[0].n + cs[1].n;
+    if (Math.min(cs[0].n, cs[1].n) / total < 0.15) continue;
+    const parsed = cs.map((x) => parseColor(x.c)).filter(Boolean) as { hex: string; alpha: number }[];
+    if (parsed.length < 2 || parsed[0].hex === parsed[1].hex) continue;
+    const [ink, other] = [...parsed].sort((x, y) => oklch(x.hex).l - oklch(y.hex).l);
+    const g = groups.get(ink.hex) ?? { texts: new Set<string>(), seconds: new Map<string, number>() };
+    g.texts.add(h.text);
+    const settled = other.alpha > 0.95 && isNeutral(other.hex, 0.06);
+    g.seconds.set(other.hex, (g.seconds.get(other.hex) || 0) + (settled ? 3 : 1));
+    groups.set(ink.hex, g);
   }
-  const best = [...pairs.values()].sort((x, y) => y.texts.size - x.texts.size)[0];
-  const twoTone: TypographySystem["twoTone"] = best && best.texts.size >= 2 ? { primary: best.a, secondary: best.b, examples: [...best.texts].slice(0, 4) } : undefined;
+  const [inkHex, grp] = [...groups.entries()].sort((x, y) => y[1].texts.size - x[1].texts.size)[0] ?? [];
+  const secondHex = grp ? [...grp.seconds.entries()].sort((x, y) => y[1] - x[1])[0]?.[0] : undefined;
+  const twoTone: TypographySystem["twoTone"] = inkHex && grp && secondHex && grp.texts.size >= 2 ? { primary: inkHex, secondary: secondHex, examples: [...grp.texts].slice(0, 4) } : undefined;
   return { families, styles: named, scale: { sizes, base, ratio, ratioName }, features, measure, twoTone };
 }

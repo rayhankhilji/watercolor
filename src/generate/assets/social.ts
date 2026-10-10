@@ -4,7 +4,7 @@ import type { Hex } from "../../profile/schema.js";
 import type { Renderer } from "../../render/renderer.js";
 import { write } from "../../util/fs.js";
 import { readableOn, isDark, mix } from "../../util/color.js";
-import { esc, clip, firstSentence, typeStyle, headlineHtml } from "../html.js";
+import { esc, clip, firstSentence, typeStyle, headlineHtml, accentText } from "../html.js";
 import { logoMarkup } from "./logo.js";
 
 export interface SocialContext {
@@ -87,7 +87,7 @@ export const SOCIAL_SPECS: Spec[] = [
   <div style="padding:64px 0 60px 72px;display:flex;flex-direction:column;justify-content:space-between">
     <div>${logoMarkup(b, { on: bg, height: 40 })}</div>
     <div>
-      <div style="${typeStyle(b, "eyebrow", 1.35)};color:${b.monochrome ? b.roles.muted : b.roles.primary};margin-bottom:22px">${esc(eyebrow)}</div>
+      <div style="${typeStyle(b, "eyebrow", 1.35)};color:${accentText(b, bg)};margin-bottom:22px">${esc(eyebrow)}</div>
       <h1 class="h" style="${headlineCss(b, size)};max-width:700px">${headlineHtml(b, headline)}</h1>
     </div>
     <div style="${typeStyle(b, "body", 1.2)};color:${b.roles.muted}">${esc(b.domain)}</div>

@@ -268,7 +268,9 @@ function pickHeroImage(p: BrandProfile): string | undefined {
   const rank = { screenshot: 3, illustration: 2, photo: 1 } as Record<string, number>;
   const img = p.imagery.images
     .filter((i) => i.path && /\.(png|jpe?g|webp)$/i.test(i.path) && rank[i.kind] && i.displayWidth >= 480 && i.displayHeight >= 270)
+    // The brand's own pages only — press/blog pages show other publications' layouts.
+    .filter((i) => !i.page || ["home", "product", "about", "customers", "enterprise", "pricing"].includes(i.page))
     .filter((i) => !/og|opengraph|social|share|thumbnail|poster|logo|press/i.test(`${i.alt} ${i.url}`) && !(i.alt || "").toLowerCase().includes(brandWord) && (!ogFile || !i.path!.endsWith(ogFile)))
-    .sort((a, b) => rank[b.kind] - rank[a.kind] || (b.context === "hero" ? 1 : 0) - (a.context === "hero" ? 1 : 0) || b.displayWidth * b.displayHeight - a.displayWidth * a.displayHeight)[0];
+    .sort((a, b) => (b.page === "home" ? 1 : 0) - (a.page === "home" ? 1 : 0) || rank[b.kind] - rank[a.kind] || (b.context === "hero" ? 1 : 0) - (a.context === "hero" ? 1 : 0) || b.displayWidth * b.displayHeight - a.displayWidth * a.displayHeight)[0];
   return img?.path;
 }

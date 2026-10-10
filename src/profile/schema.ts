@@ -350,6 +350,8 @@ export interface ImageAsset {
   kind: "photo" | "illustration" | "screenshot" | "logo" | "avatar" | "icon" | "unknown";
   format: string;
   context: string;
+  /** Kind of page it appeared on (home, product, brand, blog…). */
+  page?: string;
 }
 
 export interface ImagerySet {

@@ -6,7 +6,7 @@ import type { AssetIndex } from "../docs/sections.js";
 import type { Renderer } from "../../render/renderer.js";
 import { write, exists } from "../../util/fs.js";
 import { readableOn, oklchCss, rgbCss, contrast, mix, isDark, describeColor } from "../../util/color.js";
-import { esc, fontFaces, brandVars, typeStyle, clip, firstSentence } from "../html.js";
+import { esc, fontFaces, brandVars, typeStyle, clip, firstSentence, accentText } from "../html.js";
 import { hardRules, antiSlop, observedPersonality, colorRatio } from "../docs/heuristics.js";
 import { logoMarkup, recolorSvg, fluidSvg } from "../assets/logo.js";
 
@@ -22,7 +22,8 @@ export async function buildGuidelines(b: ResolvedBrand, t: TokenModel, assets: A
   const P = b.profile;
   const bg = b.roles.background;
   const fg = b.roles.foreground;
-  const accent = b.monochrome ? fg : b.roles.primary;
+  // Accent for text/lines must read on the page; fills (buttons, chips) still use the true primary.
+  const accent = b.monochrome ? fg : accentText(b, bg);
   const inv = b.scheme === "dark" ? b.roles.surface : b.roles.inverseBackground;
   const invFg = readableOn(inv, [b.roles.inverseForeground, "#ffffff"]);
   const names = s.colorNames ?? {};
@@ -66,12 +67,16 @@ export async function buildGuidelines(b: ResolvedBrand, t: TokenModel, assets: A
     ["Primary", b.scheme === "light" ? bg : "#ffffff", ""],
     ["Reversed", inv, "#ffffff"],
     ...(b.monochrome ? [] : ([["On primary", b.roles.primary, readableOn(b.roles.primary, [b.roles.primaryForeground, "#ffffff"])]] as [string, string, string][])),
-    ["On gradient", `linear-gradient(120deg, ${b.gradient.join(",")})`, "#ffffff"],
+    b.gradientIsCaptured
+      ? ["On gradient", `linear-gradient(120deg, ${b.gradient.join(",")})`, "#ffffff"]
+      : b.heroImage
+        ? ["On imagery", `url(${rel(b.heroImage)}) center/cover`, "#ffffff"]
+        : ["On surface", b.roles.surfaceAlt, ""],
   ];
   const markSvg = (await has("logo/svg/mark.svg")) ? await readFile(path.join(outDir, "logo/svg/mark.svg"), "utf8") : undefined;
   const logoBody = `
     <div class="logo-hero">${logoMarkup(b, { on: bg, height: 96 })}</div>
-    <div class="tiles">${logoTiles.map(([n, tbg, col]) => `<figure class="tile" style="background:${tbg}">${logoMarkup(b, { on: tbg.startsWith("#") ? tbg : b.gradient[0], height: 44, color: (col || undefined) as string | undefined })}<figcaption style="color:${tbg.startsWith("#") ? readableOn(tbg, [fg, "#ffffff"]) : "#fff"}">${n}</figcaption></figure>`).join("")}</div>
+    <div class="tiles">${logoTiles.map(([n, tbg, col]) => `<figure class="tile" style="background:${tbg}">${logoMarkup(b, { on: tbg.startsWith("#") ? tbg : "#000000", height: 44, color: (col || undefined) as string | undefined })}<figcaption style="color:${tbg.startsWith("#") ? readableOn(tbg, [fg, "#ffffff"]) : "#fff"}">${n}</figcaption></figure>`).join("")}</div>
     <div class="grid2" style="margin-top:48px">
       <div><h3 class="kicker">Clear space</h3><div class="clearspace">${logoMarkup(b, { on: bg, height: 56 })}</div><p class="small">${esc(s.logo?.clearspace ?? "Keep clear space equal to the cap-height of the wordmark on all sides.")}</p></div>
       <div><h3 class="kicker">Mark</h3><div class="markbox">${markSvg ? fluidSvg(markSvg, 'style="width:120px;height:120px"') : "—"}</div><p class="small">${assets.markSource === "split" ? "Split automatically from the lockup." : assets.markSource === "monogram" ? "Derived monogram — the brand has no standalone symbol." : `From the site's ${assets.markSource}.`} Minimum size: ${esc(s.logo?.minSize ?? "16px")}.</p></div>
@@ -90,7 +95,7 @@ export async function buildGuidelines(b: ResolvedBrand, t: TokenModel, assets: A
     <div class="ramps">${Object.entries(b.ramps).map(([k, rr]) => `<div class="ramp"><span class="rl">${esc(k)}</span>${Object.entries(rr.steps).map(([st, v]) => `<div class="st" style="background:${v};color:${readableOn(v, ["#fff", "#0a0a0a"])}"><b>${st}${st === rr.pinned ? " ●" : ""}</b><span>${v}</span></div>`).join("")}</div>`).join("")}</div>
     <h3 class="kicker">Contrast</h3>
     <div class="contrast">${P.colors.contrast.map((c) => `<div class="cpair" style="background:${c.bg};color:${c.fg}"><b>Aa</b><span>${c.ratio}:1 · Lc ${Math.abs(c.apca)}</span><em>${c.aaa ? "AAA" : c.aa ? "AA" : c.aaLarge ? "AA Large" : "Fail"}</em></div>`).join("")}</div>
-    ${b.gradient.length ? `<h3 class="kicker">Gradient</h3><div class="gradbar" style="background:linear-gradient(120deg,${b.gradient.join(",")})"></div><p class="small mono">${b.gradient.join(" → ")}${b.gradientIsCaptured ? " · measured on site" : " · derived"}</p>` : ""}`;
+    ${b.gradientIsCaptured ? `<h3 class="kicker">Gradient</h3><div class="gradbar" style="background:linear-gradient(120deg,${b.gradient.join(",")})"></div><p class="small mono">${b.gradient.join(" → ")}${b.gradientIsCaptured ? " · measured on site" : " · derived"}</p>` : ""}`;
 
   // ---------------- Typography
   const typeBody = `
@@ -300,7 +305,7 @@ main{min-width:0}
 .videos{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-top:48px}
 .videos video,.grid2 video{border-radius:${b.radius.card};width:100%;background:${b.roles.surface}}
 .demo{display:flex;gap:16px;margin-top:32px;align-items:center}
-.demo-btn{font:inherit;font-weight:500;padding:10px 18px;border:0;border-radius:${b.radius.button};background:${accent};color:${readableOn(accent, [b.roles.primaryForeground, "#fff"])};cursor:pointer;transition:transform var(--duration-base) var(--ease-standard),box-shadow var(--duration-base) var(--ease-standard)}
+.demo-btn{font:inherit;font-weight:500;padding:10px 18px;border:0;border-radius:${b.radius.button};background:${b.monochrome ? fg : b.roles.primary};color:${b.monochrome ? bg : b.roles.primaryForeground};cursor:pointer;transition:transform var(--duration-base) var(--ease-standard),box-shadow var(--duration-base) var(--ease-standard)}
 .demo-btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px -10px ${accent}}
 .demo-card{padding:10px 18px;border:1px solid ${b.roles.border};border-radius:${b.radius.md}px;animation:wcin var(--duration-slow) var(--ease-entrance) infinite alternate}
 @keyframes wcin{from{opacity:.2;transform:translateY(10px)}to{opacity:1;transform:none}}

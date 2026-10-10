@@ -307,7 +307,7 @@ export async function extractImagery(capture: CaptureResult, outDir: string): Pr
         continue;
       }
       const kind = classifyImage(im, format);
-      images.push({ path: file, url: im.src, width: im.natural.w, height: im.natural.h, displayWidth: im.display.w, displayHeight: im.display.h, alt: im.alt, kind, format, context: im.context });
+      images.push({ path: file, url: im.src, width: im.natural.w, height: im.natural.h, displayWidth: im.display.w, displayHeight: im.display.h, alt: im.alt, kind, format, context: im.context, page: p.kind });
     }
     // Inline-SVG logo walls
     type WallSvg = { html: string; label: string; w: number; h: number };

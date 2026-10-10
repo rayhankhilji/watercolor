@@ -1,0 +1,112 @@
+{
+  "version": "1",
+  "mode": "extract",
+  "company": {
+    "name": "Littlebird",
+    "oneLiner": "An always-on AI assistant with a memory of your work — it remembers your meetings, messages, docs and apps, then takes action so you never lose context.",
+    "description": "Littlebird runs across your devices and apps, building a private memory of your work. You can ask it anything about what you've seen or said, get notes and prep for every meeting, schedule daily briefings, and draft emails and docs in your own voice — with strict, user-controlled privacy (no training on your data, zero-retention LLM agreements, pause and delete anytime).",
+    "category": "AI personal assistant (memory)",
+    "businessModel": "Prosumer",
+    "stage": "Early-stage, venture-backed; used by people at NVIDIA, Netflix, Stanford and more",
+    "audience": {
+      "primary": "Knowledge workers drowning in meetings, messages and context-switching",
+      "buyer": "Individuals first (free download), then teams",
+      "user": "Founders, operators, researchers and creators who live across many apps"
+    },
+    "jobsToBeDone": ["Recall any detail from past work instantly", "Never take meeting notes again", "Start the day with a briefing and a plan", "Draft in your own voice without re-explaining context"],
+    "competitors": ["Rewind / Limitless", "Granola", "Otter.ai", "ChatGPT memory"],
+    "differentiators": ["Context you never have to explain — 'no need to explain yourself'", "Privacy as a product feature: user-controlled memory, no training, zero retention", "Works across every app and device, including the Hover overlay"]
+  },
+  "positioning": {
+    "statement": "For people whose work is scattered across meetings, messages and apps, Littlebird is the always-on assistant that already knows what you're working on — so you can skip the setup and just ask, with your memory kept private and in your control.",
+    "promise": "No need to explain yourself.",
+    "pillars": [
+      { "name": "It remembers", "description": "A private memory of meetings, messages, docs and apps." },
+      { "name": "It acts", "description": "Notes, briefings, schedules and drafts — in your voice." },
+      { "name": "It's yours", "description": "You decide what it sees, keeps and forgets." }
+    ]
+  },
+  "personality": {
+    "summary": "Littlebird is the quiet, attentive companion of AI assistants — a bird on your shoulder rather than a robot in your inbox. The brand trades the category's neon and sparkles for eggshell paper, a soft display serif, painted landscapes and black pill buttons. It sounds human and reassuring, and takes privacy as seriously as warmth.",
+    "archetype": "The Companion — attentive, discreet, always nearby.",
+    "traits": [
+      { "trait": "Calm", "notThis": "Sleepy", "description": "Eggshell backgrounds and painterly skies; one ink CTA; plenty of air between sections." },
+      { "trait": "Personal", "notThis": "Intrusive", "description": "'Memory this personal has to be this private.' — intimacy paired with control." },
+      { "trait": "Trustworthy", "notThis": "Legalistic", "description": "Privacy promises in plain words ('You're the customer, not the inventory'), with footnotes for the details." },
+      { "trait": "Effortless", "notThis": "Vague", "description": "'Skip the setup, the pasting, and the backstory, and just ask.' — concrete about what disappears." }
+    ],
+    "spectrum": { "formalCasual": 0.6, "seriousPlayful": 0.35, "technicalAccessible": 0.85, "restrainedExpressive": 0.4, "classicModern": 0.45, "quietLoud": 0.2 }
+  },
+  "voice": {
+    "summary": "Warm, plain and reassuring. Headlines are short promises about what you'll never have to do again; body copy is conversational, second person, and specific about privacy. Testimonials from real users carry the emotional proof.",
+    "principles": [
+      { "name": "Promise relief", "description": "Name the chore that disappears.", "do": "Never take meeting notes again", "dont": "AI-powered meeting intelligence" },
+      { "name": "Privacy in plain words", "description": "Say exactly what happens to data, in human terms.", "do": "We don't sell it or train on it. You're the customer, not the inventory.", "dont": "Enterprise-grade data protection protocols." },
+      { "name": "Talk like a companion", "description": "Second person, gentle, never hype.", "do": "Littlebird already understands what you're working on — so just ask.", "dont": "Supercharge your productivity with next-gen AI!" }
+    ],
+    "vocabulary": {
+      "use": ["remembers", "memory", "context", "just ask", "your voice", "private", "always-on", "briefing"],
+      "avoid": ["supercharge", "AI-powered", "unlock", "10x", "revolutionary", "copilot", "magic"]
+    },
+    "mechanics": [
+      "Sentence case headlines without periods (except emphatic statements).",
+      "Second person throughout; 'we' only for privacy commitments.",
+      "Footnoted claims for security and privacy.",
+      "CTAs: 'Download for free', 'Learn more →'."
+    ],
+    "examples": [
+      { "context": "Hero", "onBrand": "Your always-on AI assistant", "offBrand": "The AI copilot that 10x's your productivity ✨" },
+      { "context": "Feature", "onBrand": "Perfect notes from every meeting you've had, and a full prep for every meeting you haven't.", "offBrand": "Automated AI meeting summaries and insights" },
+      { "context": "Privacy", "onBrand": "Pause anytime. Delete the last hour, the last day, or everything, in two clicks.", "offBrand": "Robust data governance controls." },
+      { "context": "Onboarding", "onBrand": "Littlebird is listening for context now. Ask it anything about today.", "offBrand": "Setup complete! Start exploring AI features 🚀" }
+    ],
+    "taglines": ["No need to explain yourself.", "The assistant that remembers.", "Memory this personal has to be this private."]
+  },
+  "visual": {
+    "summary": "Eggshell paper (#FFFDF5), ink (#1B1C14) and warm grays, with a soft display serif (Meraki) for headlines and Söhne for everything else. Imagery is painterly — skies, trees, birds — around crisp product UI. The only strong color moments are the painted scenes and a deep green in the product.",
+    "principles": [
+      { "name": "Paper, not screen", "description": "Eggshell #FFFDF5 and warm stone #E4E2DA instead of white and cool gray." },
+      { "name": "A soft serif voice", "description": "Meraki 400 headlines at 52–82px with tight tracking (−0.04 to −0.06em); never bold." },
+      { "name": "Ink pills", "description": "Primary actions are black ink (#1B1C14) pills; color isn't used for CTAs." },
+      { "name": "Painted nature around precise UI", "description": "Landscape and sky paintings frame the product — calm, analog, human." },
+      { "name": "Dark for privacy", "description": "Privacy and security sections invert to deep charcoal to signal seriousness." }
+    ],
+    "colorUsage": "Eggshell surfaces dominate; ink for type and CTAs; warm grays for secondary text; deep green #00674F only inside product UI and small accents; painted imagery supplies the color.",
+    "typography": "Meraki (display serif) for headlines; Söhne (Buch/Kräftig/Halbfett) for body and UI at 15/1.6; eyebrows in 12px Söhne semibold, +0.14em, uppercase.",
+    "layout": "Centered hero, then alternating text/visual rows on a 1000px measure — airy, with long vertical breaks between sections.",
+    "imagery": "Painterly landscapes, skies and birds (illustration, not photography); real product UI in soft-shadowed windows; real user portraits beside testimonials.",
+    "iconography": "Thin (≈1.8px) stroked line icons, rounded, in ink.",
+    "shape": "Soft and rounded: pill buttons, 12–20px cards and windows.",
+    "do": ["Use eggshell backgrounds and ink pill CTAs.", "Set headlines in the soft serif, never bold.", "Frame the product with calm, painted nature imagery.", "State privacy facts plainly."],
+    "dont": ["Don't use neon, gradients or glowing AI orbs.", "Don't use color for primary CTAs.", "Don't use robots, sparkles or brain imagery for 'AI'."]
+  },
+  "motion": {
+    "summary": "Gentle and ambient: soft fades and short CSS transitions (150–300ms), with product UI videos showing the assistant at work. Nothing bounces or flashes.",
+    "principles": [
+      { "name": "Like breathing", "description": "Slow, soft fades; motion never competes with reading." },
+      { "name": "Show the assistant working", "description": "Product videos of real recall and drafting are the main motion." }
+    ],
+    "signature": "Calm product demos of Littlebird answering 'What did Sarah need from me?' in place."
+  },
+  "logo": {
+    "clearspace": "The height of the bird mark on all sides.",
+    "minSize": "16px for the bird; 18px tall for the wordmark.",
+    "misuse": ["Recolor beyond ink, white, eggshell or off-black (per the press kit)", "Separate or rotate the bird", "Place on busy imagery without contrast"]
+  },
+  "colorNames": {
+    "#fffdf5": "Eggshell",
+    "#1b1c14": "Ink",
+    "#000000": "Black",
+    "#e4e2da": "Stone",
+    "#4d4e46": "Moss Gray",
+    "#76766e": "Pebble",
+    "#2a2b22": "Charcoal",
+    "#00674f": "Forest",
+    "#826e2b": "Ochre"
+  },
+  "copy": {
+    "headlines": ["Your always-on AI assistant", "No need to explain yourself", "Never take meeting notes again"],
+    "taglines": ["No need to explain yourself."],
+    "announcement": "Meet Hover, the AI on every screen"
+  }
+}

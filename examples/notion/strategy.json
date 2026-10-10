@@ -1,0 +1,125 @@
+{
+  "version": "1",
+  "mode": "extract",
+  "company": {
+    "name": "Notion",
+    "oneLiner": "The AI workspace where teams and agents capture knowledge, find answers and automate busywork — docs, wikis, projects and Custom Agents in one connected system.",
+    "description": "Notion started as an all-in-one workspace built from flexible blocks and has become an AI workspace: a system of record for a team's knowledge, with Notion AI search across connected apps and Custom Agents that run workflows. It is free for individuals and grows into Business and Enterprise plans for companies like OpenAI, Ramp, Figma and Vercel.",
+    "category": "AI workspace (productivity)",
+    "businessModel": "Prosumer",
+    "stage": "Scaled leader — 100M users in 50+ countries, 50% of YC companies",
+    "audience": {
+      "primary": "Teams at ambitious tech companies who want one place for docs, projects and AI",
+      "buyer": "Founders, heads of operations and IT leaders consolidating tools",
+      "user": "Everyone on the team — PMs, engineers, designers, ops — plus individuals for personal projects"
+    },
+    "jobsToBeDone": ["Bring everything into one system of record", "Get answers with citations across connected apps", "Automate recurring work with agents", "Run projects, docs and wikis without tool sprawl"],
+    "competitors": ["Confluence", "Coda", "Google Workspace", "ClickUp", "Microsoft Loop"],
+    "differentiators": ["Flexible building blocks — 'solve your problems your way'", "AI that works where the team's knowledge already lives", "Free-to-start PLG with enterprise depth", "A humane, crafted brand in a utilitarian category"]
+  },
+  "positioning": {
+    "statement": "For teams drowning in tabs and tools, Notion is the one workspace where knowledge, projects and AI agents live together — so work moves without the duct tape of emails, copy/paste and countless tabs.",
+    "promise": "One tool to run your company.",
+    "pillars": [
+      { "name": "Capture knowledge", "description": "One system of record for docs, wikis and projects." },
+      { "name": "Find answers", "description": "AI search across the workspace and connected apps, with citations." },
+      { "name": "Automate busywork", "description": "Custom Agents that keep work moving 24/7." }
+    ]
+  },
+  "personality": {
+    "summary": "Notion is a tool with a sketchbook. The product UI is crisp and black-and-white; around it, hand-drawn characters, a playful pill word and a founder's letter that starts 'Hi there!' make it feel made by people who love tools, history and art. It is confident enough to be simple — big black headlines, few colors — and warm enough to wink.",
+    "archetype": "The Maker — a craftsperson's workshop where anyone can build their own tools.",
+    "traits": [
+      { "trait": "Simple", "notThis": "Sparse", "description": "Short headlines ('AI where your team works.') and a nearly monochrome palette — but every surface is full of real product." },
+      { "trait": "Playful", "notThis": "Childish", "description": "Hand-drawn people, the rotating 'Jam/Create' pill, a 👈 in the careers copy — personality in small doses." },
+      { "trait": "Thoughtful", "notThis": "Academic", "description": "The about page cites Alan Kay, Doug Engelbart and Ted Nelson; the footer quotes McLuhan in a serif." },
+      { "trait": "Confident", "notThis": "Corporate", "description": "'One tool to run your company.' — declarative, with proof (100M users, G2 #1) never shouted." }
+    ],
+    "spectrum": { "formalCasual": 0.65, "seriousPlayful": 0.55, "technicalAccessible": 0.75, "restrainedExpressive": 0.35, "classicModern": 0.7, "quietLoud": 0.45 }
+  },
+  "voice": {
+    "summary": "Plain, short and friendly. Headlines are four-word sentences with periods; body copy is conversational (reading grade ~7) and speaks to the team as 'you' and 'your team'. The brand allows itself a little warmth and history, but product copy stays crisp: verbs + nouns ('Capture knowledge', 'Find answers', 'Automate busywork').",
+    "principles": [
+      { "name": "Say it in four words", "description": "Headlines are short declarative sentences with a period.", "do": "AI where your team works.", "dont": "Revolutionize your team's productivity with cutting-edge AI-powered workflows" },
+      { "name": "Verb + noun", "description": "Capabilities are named as actions people take.", "do": "Automate busywork.", "dont": "Intelligent automation solutions" },
+      { "name": "Human first, product second", "description": "Talk about teams, people and their day before features.", "do": "Where teams and agents jam together.", "dont": "Agentic AI platform for enterprise knowledge management" },
+      { "name": "Proof without pomp", "description": "Numbers appear as quiet facts in small type.", "do": "100M users in over 50 countries", "dont": "The world's #1 most loved workspace!!!" }
+    ],
+    "vocabulary": {
+      "use": ["workspace", "teams", "agents", "knowledge", "system of record", "busywork", "answers", "building blocks", "together"],
+      "avoid": ["synergy", "supercharge", "revolutionize", "seamless", "leverage", "enterprise-grade"]
+    },
+    "mechanics": [
+      "Sentence case everywhere; headlines often end with a period.",
+      "Em dashes without spaces ('instantly—with citations').",
+      "Arrows (→) on links and secondary CTAs.",
+      "Primary CTA always names the product: 'Get Notion free'.",
+      "Emoji only in personal, founder-voice copy — never in product UI copy."
+    ],
+    "examples": [
+      { "context": "Hero", "onBrand": "Your wiki, docs and projects. Together.", "offBrand": "The all-in-one AI-powered productivity platform for modern teams" },
+      { "context": "Feature card", "onBrand": "Get answers, instantly—with citations.", "offBrand": "Leverage AI-driven insights across your knowledge base" },
+      { "context": "Empty state", "onBrand": "Nothing here yet. Press / to add a block.", "offBrand": "No content available. Please create content to get started." },
+      { "context": "Error", "onBrand": "We couldn't sync this page. Check your connection and try again.", "offBrand": "Error 500: An unexpected error has occurred." },
+      { "context": "Launch post", "onBrand": "Meet Custom Agents. They keep work moving while you sleep.", "offBrand": "Introducing our revolutionary new AI agent platform 🚀" }
+    ],
+    "taglines": ["One tool to run your company.", "AI where your team works.", "Where teams and agents work together."]
+  },
+  "visual": {
+    "summary": "Black ink on white and warm off-white, set in heavy, tightly tracked Inter; a single blue for action; real product UI as the main image; and a hand-drawn character world plus duotone customer photography for warmth. Color appears in small, functional moments — tags, the pill word, customer cards.",
+    "principles": [
+      { "name": "Heavy, tight headlines", "description": "Inter 700 at 54–96px with −0.035 to −0.048em tracking and ~1.04 leading; the headline is the loudest thing on the page." },
+      { "name": "The product is the picture", "description": "Real Notion pages (meetings, dashboards, tasks, agents) staged on warm #F6F5F4 cards." },
+      { "name": "Sketchbook warmth", "description": "Hand-drawn black-line characters and doodles sit on top of crisp UI — never the other way round." },
+      { "name": "Color as a highlighter", "description": "Blue #0075DE for CTAs; saturated red/blue/yellow appear only as duotone customer cards, tags and the inline pill." },
+      { "name": "Serif for the human voice", "description": "Lyon Text is reserved for quotes and editorial moments (testimonials, the McLuhan quote)." }
+    ],
+    "colorUsage": "White and warm off-white (#F6F5F4) dominate; near-black ink (#000 / #1A1A1A) sets type and illustration line; Notion Blue (#0075DE) is the only action color; red #F64932, yellow #FFB110 and blue tints appear as content color, not chrome.",
+    "colorRatio": [{ "name": "White & warm surfaces", "percent": 60 }, { "name": "Ink", "percent": 36 }, { "name": "Notion Blue", "percent": 2 }, { "name": "Content colors", "percent": 2 }],
+    "typography": "Inter (as NotionInter) for everything UI and marketing: 700 for headlines with aggressive negative tracking, 400/500 for body at 16/1.5. Lyon Text serif for quotes. No mono in marketing.",
+    "layout": "Centered hero, then left-aligned sections on a wide 1380px canvas; bento-style feature cards with a small label, a bold title and a real UI crop; generous gaps.",
+    "imagery": "Real product UI; black-line hand-drawn characters and doodles; duotone-tinted customer photography in primary-ish hues; logo walls in monochrome.",
+    "iconography": "Simple solid glyphs and emoji-like colored page icons inside the product; arrows for navigation.",
+    "shape": "Rounded but not bubbly: 5px inputs, 8px buttons, 12px cards; pills for tags and the hero word.",
+    "do": [
+      "Set headlines in Inter 700 with −0.035em tracking and tight leading.",
+      "Show real Notion pages, not abstract illustrations of 'productivity'.",
+      "Use hand-drawn black-line characters for warmth around the product.",
+      "Reserve Notion Blue for the primary CTA."
+    ],
+    "dont": [
+      "Don't add gradients or glows — Notion is flat.",
+      "Don't use more than one accent color in chrome; color belongs to content.",
+      "Don't use the serif for headlines or UI."
+    ]
+  },
+  "motion": {
+    "summary": "Motion is subtle and functional: 150–200ms ease transitions on hover and menus, a rotating verb in the hero pill, and product UI that animates like the real app. No WebGL, no scroll-jacking.",
+    "principles": [
+      { "name": "Feel like the app", "description": "Marketing motion mirrors in-product micro-interactions — quick, ease-out, undramatic." },
+      { "name": "One playful moment", "description": "The hero's rotating verb pill is the only flourish; everything else stays calm." }
+    ],
+    "signature": "The hero pill that cycles verbs — 'Where teams and agents Jam / Create together.'"
+  },
+  "logo": {
+    "clearspace": "Half the height of the cube mark on all sides.",
+    "minSize": "16px for the mark; 20px tall for the lockup.",
+    "misuse": ["Recolor the cube outside black or white", "Separate the 'N' from the cube", "Add shadows or 3D effects", "Place on busy photography without a solid backing"]
+  },
+  "colorNames": {
+    "#0075de": "Notion Blue",
+    "#000000": "Ink",
+    "#1a1a1a": "Graphite",
+    "#f6f5f4": "Warm Paper",
+    "#e6e6e6": "Divider",
+    "#696969": "Slate",
+    "#f64932": "Tomato",
+    "#ffb110": "Marigold",
+    "#005bab": "Deep Blue"
+  },
+  "copy": {
+    "headlines": ["AI where your team works.", "One tool to run your company.", "Bring everything into one system of record."],
+    "taglines": ["One tool to run your company."],
+    "announcement": "Meet Custom Agents."
+  }
+}

@@ -1,5 +1,6 @@
 import { pathToFileURL } from "node:url";
 import type { ResolvedBrand, FontRef } from "../profile/resolve.js";
+import { contrast as contrastRatio } from "../util/color.js";
 import type { TokenModel } from "./tokens/index.js";
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
@@ -107,4 +108,16 @@ export function headlineHtml(b: { profile: { typography: { twoTone?: { primary: 
   const m = /^(.{8,}?[.!?])\s+(.+)$/.exec(text);
   if (!tt || !m) return esc(text);
   return `${esc(m[1])} <span style="opacity:${onDark ? 0.62 : 1};${onDark ? "" : `color:${tt.secondary}`}">${esc(m[2])}</span>`;
+}
+
+/**
+ * The brand color to use for small accent *text* (eyebrows, numbers, kickers) on a background:
+ * the primary when it reads (≥ 3:1), else the first accent/link/ramp step that does, else muted ink.
+ * Light primaries (lavender, butter) stay for fills; their text needs a deeper sibling.
+ */
+export function accentText(b: { monochrome: boolean; roles: { primary: string; accent: string[]; link: string; muted: string; foreground: string }; ramps: Record<string, { steps: Record<string, string> }> }, bg: string): string {
+  if (b.monochrome) return b.roles.muted;
+  const deeper = b.ramps.primary ? ["700", "800", "900"].map((s) => b.ramps.primary.steps[s]) : [];
+  const candidates = [b.roles.primary, ...deeper, b.roles.link, ...b.roles.accent, b.roles.muted, b.roles.foreground];
+  return candidates.find((c) => c && contrastRatio(c, bg) >= 3) ?? b.roles.foreground;
 }

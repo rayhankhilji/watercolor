@@ -1,0 +1,114 @@
+{
+  "version": "1",
+  "mode": "extract",
+  "company": {
+    "name": "Plot",
+    "oneLiner": "AI video social listening — Plot watches social video 24/7 so brand, community and creator teams find every mention, tagged or not.",
+    "description": "Plot is an AI platform for social media teams at consumer brands. It watches, listens to and reads every frame of social video (TikTok, Reels, Shorts) to surface untagged brand mentions and UGC, source and track creators, and prove the impact of social with views, engagement, EMV and sentiment.",
+    "category": "Video social listening (marketing AI)",
+    "businessModel": "B2B",
+    "stage": "Venture-backed growth stage ($10M+ raised; enterprise consumer-brand customers)",
+    "audience": {
+      "primary": "Social, community and creator teams at consumer brands",
+      "buyer": "Heads of social, brand marketing and consumer insights at enterprise consumer companies",
+      "user": "Social media managers, community managers and creator-partnership leads"
+    },
+    "jobsToBeDone": ["Find untagged UGC and brand mentions in video", "Source and track creators", "Report on social performance and EMV", "Do social research without doomscrolling"],
+    "competitors": ["Brandwatch", "Sprinklr", "Talkwalker", "Dash Hudson"],
+    "differentiators": ["Video-native listening — reads audio, visuals and captions, not just text and @handles", "Built by social media marketers for social media marketers", "Purpose-built workflows per team: community, creator, research"]
+  },
+  "positioning": {
+    "statement": "For social teams at consumer brands, Plot is the AI that actually watches social video — catching the 80% of brand mentions that text-based listening misses, so teams can engage, source creators and prove impact without doomscrolling.",
+    "promise": "AI that watches social video 24/7 so you don't have to.",
+    "pillars": [
+      { "name": "Capture it all, tagged or not", "description": "Audio, visuals and captions — not just @handles." },
+      { "name": "Understand the full context", "description": "360° analysis of every video: who, what and why." },
+      { "name": "Prove your impact", "description": "Views, engagement, EMV and sentiment across every mention." }
+    ]
+  },
+  "personality": {
+    "summary": "Plot feels like a beauty-and-lifestyle magazine that happens to be an AI company: warm cream pages, oxblood and honey-gold accents, huge light headlines and real creator videos front and centre. It speaks like a colleague who has done the job — 'Built with heart, by people who've done the work', 'Let's talk :)' — confident about the tech but never cold.",
+    "archetype": "The Insider — a social marketer's peer who understands the culture as well as the data.",
+    "traits": [
+      { "trait": "Warm", "notThis": "Saccharine", "description": "Cream backgrounds, '24/7 so you don't have to', a smiley in the contact headline — friendly without gushing." },
+      { "trait": "Culture-fluent", "notThis": "Trend-chasing", "description": "Speaks UGC, creators, doomscrolling — and shows real creator content, not stock." },
+      { "trait": "Confident", "notThis": "Aggressive", "description": "'The era of text based social listening is over.' — a bold claim backed by '80% of brand mentions happen in video'." },
+      { "trait": "Polished", "notThis": "Corporate", "description": "Luxury-adjacent palette and type that fit the beauty and retail brands it serves." }
+    ],
+    "spectrum": { "formalCasual": 0.6, "seriousPlayful": 0.45, "technicalAccessible": 0.8, "restrainedExpressive": 0.55, "classicModern": 0.6, "quietLoud": 0.4 }
+  },
+  "voice": {
+    "summary": "Conversational, benefit-first and fluent in social-team language. Headlines are centered, mid-length statements; supporting lines in honey-gold make the claim concrete with a number. Second person, contractions, and the occasional emoticon in human moments.",
+    "principles": [
+      { "name": "Say the pain out loud", "description": "Name what social teams hate doing.", "do": "Less doomscrolling. Less manual performance tracking.", "dont": "Optimize your social media monitoring workflows." },
+      { "name": "Claim, then quantify", "description": "Bold statement followed by a specific number.", "do": "Uncover 8x more user generated content with video social listening.", "dont": "Discover more content than ever before." },
+      { "name": "Speak like a peer", "description": "Built by social marketers — use their words.", "do": "Finding the UGC that never tags the brand.", "dont": "Leverage multimodal AI for brand intelligence." },
+      { "name": "A little heart", "description": "Warmth in human touchpoints (about, contact, careers).", "do": "Let's talk :)", "dont": "Submit an inquiry." }
+    ],
+    "vocabulary": {
+      "use": ["social video", "UGC", "untagged", "creators", "community", "social listening", "EMV", "doomscrolling", "social teams"],
+      "avoid": ["leverage", "synergy", "omnichannel", "revolutionize", "harness", "cutting-edge"]
+    },
+    "mechanics": [
+      "Sentence case headlines, usually with a period.",
+      "Numerals and multipliers ('8x', '80%', '24/7').",
+      "Contractions always (don't, you're, we've).",
+      "Primary CTA is 'Schedule Demo' (title case on buttons)."
+    ],
+    "examples": [
+      { "context": "Hero", "onBrand": "AI that watches social video 24/7 so you don't have to.", "offBrand": "Next-generation AI-powered social intelligence platform" },
+      { "context": "Feature", "onBrand": "Find the creators already talking about you — tagged or not.", "offBrand": "Advanced creator discovery capabilities" },
+      { "context": "Case study title", "onBrand": "How Chefman turned untagged UGC into a creator growth engine", "offBrand": "Chefman Case Study: Driving ROI Through Social" },
+      { "context": "Empty state", "onBrand": "No mentions yet today. We're still watching.", "offBrand": "No data available for the selected period." },
+      { "context": "Social post", "onBrand": "80% of brand mentions on TikTok never tag the brand. We found them.", "offBrand": "🚀 Unlock the power of social listening with AI! 🚀" }
+    ],
+    "taglines": ["AI that watches social video so you don't have to.", "Every mention. Tagged or not.", "Social listening, for the video era."]
+  },
+  "visual": {
+    "summary": "Warm cream pages, near-black type and an oxblood (#800532) action color, lifted by honey gold (#D49B2E) and soft pastel cards (lavender, sage, butter). Display type is Good Sans at very large, light sizes. Real creator videos in phone frames are the hero imagery.",
+    "principles": [
+      { "name": "Cream, not white", "description": "Pages sit on warm cream (#FAF3EC / #FBF6EF); pure white is reserved for cards and phone UI." },
+      { "name": "Oxblood acts, gold explains", "description": "Oxblood #800532 is for CTAs and the announcement bar; honey gold #D49B2E colors the explanatory line under a headline." },
+      { "name": "Real creators as hero", "description": "UGC videos in phone frames with Plot's UI annotations — never stock photography." },
+      { "name": "Soft pastel stages", "description": "Feature moments sit on large rounded pastel panels (lavender #E6DDED, butter #F8E8CA, sage #CDE2DF)." },
+      { "name": "Big, light, centered", "description": "Centered headlines in Good Sans 400 with slight negative tracking; display sizes reach 150px+." }
+    ],
+    "colorUsage": "Cream dominates; black for type; oxblood for actions and the announcement bar; honey gold for supporting statements; pastels as panel backgrounds. Dark chocolate #230603 for inverse sections.",
+    "typography": "Good Sans (regular/medium) for headlines and UI with tight tracking at large sizes; TT Commons Pro for body. Weight stays at 400–500 — hierarchy comes from size.",
+    "layout": "Centered hero and section headers, 1184px measure, generous vertical rhythm, large 24–48px radius panels, pill buttons.",
+    "imagery": "Vertical creator videos (TikTok/Reels) in phone frames, annotated with Plot UI chips; customer logo marquee in muted tones.",
+    "iconography": "Phosphor-style 2px line icons in small sizes above feature labels.",
+    "shape": "Mixed by design: pill buttons, 24–48px radius panels, 12–16px cards.",
+    "do": ["Use cream backgrounds and oxblood CTAs.", "Pair every bold claim with a gold supporting line that quantifies it.", "Show real social video in phone frames."],
+    "dont": ["Don't use pure white pages or cold grays.", "Don't use stock photography or AI-generated people.", "Don't use heavy (700+) weights for headlines."]
+  },
+  "motion": {
+    "summary": "Scroll-led storytelling with GSAP ScrollTrigger: product panels pin and sequence as you scroll, videos autoplay, and a Lottie animation illustrates the product. UI transitions are quick (150–300ms) on a soft standard curve.",
+    "principles": [
+      { "name": "Video is the motion", "description": "Autoplaying creator videos carry most of the movement; UI motion stays quiet." },
+      { "name": "Scroll tells the story", "description": "Workflows (community, creator, research) reveal as pinned scroll sections." }
+    ],
+    "signature": "Pinned, scroll-driven walkthrough of the three team workflows alongside autoplaying creator videos."
+  },
+  "logo": {
+    "clearspace": "The height of the 'P' on all sides.",
+    "minSize": "18px tall.",
+    "misuse": ["Recolor outside black, oxblood or cream", "Place on busy video frames without a cream backing", "Add effects"]
+  },
+  "colorNames": {
+    "#800532": "Oxblood",
+    "#faf3ec": "Cream",
+    "#fbf6ef": "Linen",
+    "#000000": "Ink",
+    "#230603": "Espresso",
+    "#d49b2e": "Honey",
+    "#f2d192": "Butter",
+    "#e6dded": "Lavender",
+    "#cde2df": "Sage",
+    "#c2b6ab": "Taupe"
+  },
+  "copy": {
+    "headlines": ["AI that watches social video 24/7 so you don't have to.", "The era of text based social listening is over."],
+    "announcement": "Plot raises $10M to watch every social video"
+  }
+}

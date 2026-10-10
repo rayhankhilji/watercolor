@@ -35,6 +35,19 @@ brand/
 └── strategy.json          ← the agent's judgment: positioning, personality, voice, overrides
 ```
 
+## Gallery
+
+Five real brands, run end to end ([all examples →](examples/)):
+
+| | | |
+|---|---|---|
+| [<img src="examples/stripe/previews/og-default.jpg" alt="Stripe">](examples/stripe/) | [<img src="examples/notion/previews/og-default.jpg" alt="Notion">](examples/notion/) | [<img src="examples/plot/previews/og-default.jpg" alt="Plot">](examples/plot/) |
+| **Stripe** — WebGL ribbon captured from the hero, Söhne Light, two-tone headlines | **Notion** — Inter 700 at −0.035em, flat, real product UI | **Plot** — cream and oxblood, Good Sans, creator video |
+| [<img src="examples/littlebird/previews/og-default.jpg" alt="Littlebird">](examples/littlebird/) | [<img src="examples/wisprflow/previews/og-default.jpg" alt="Wispr Flow">](examples/wisprflow/) | [<img src="examples/stripe/previews/palette.jpg" alt="Stripe palette">](examples/stripe/) |
+| **Littlebird** — Meraki serif, ink pills, official press-kit logos | **Wispr Flow** — EB Garamond, lavender CTA, forest green | Color spec sheet: roles, OKLCH ramps with pinned brand values |
+
+<sub>Brand marks shown belong to their owners and appear only to demonstrate the output.</sub>
+
 ## Why
 
 Every "AI brand generator" gives you the same purple gradient and Inter. watercolor starts from **evidence**: it opens the site in a real browser, measures every visible element, hovers the buttons, records the canvases, hooks WebGL to capture the shaders behind animated gradients, downloads the fonts, the Lottie files and the product videos — then hands that evidence to an agent equipped with an opinionated library on what separates great brand systems from slop, by category (B2B SaaS, AI, devtools, fintech, consumer).

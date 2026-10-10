@@ -46,8 +46,9 @@ export function logoMarkup(b: ResolvedBrand, o: LogoMarkupOpts): string {
     const declared = (wantMark ? b.profile.logo.mark?.colors : b.profile.logo.primary?.colors) ?? [];
     // An SVG that declares no paint renders black.
     const colors = declared.length ? declared : ["#000000"];
-    // Recolor when most of the mark would sink into the background (WCAG < 2.2:1).
-    const lowContrast = colors.filter((c) => contrast(c, o.on) < 2.2).length >= Math.ceil(colors.length / 2);
+    // Recolor only when every paint would sink into the background (WCAG < 2.2:1);
+    // multi-color marks with an internal knockout (Notion's white "N") stay intact.
+    const lowContrast = colors.every((c) => contrast(c, o.on) < 2.2);
     if (o.color) svg = recolorSvg(svg, o.color);
     else if (lowContrast) svg = recolorSvg(svg, readableOn(o.on, [b.roles.foreground, b.roles.background, "#ffffff", "#0a0a0a"]));
     const { w, h } = svgSize(svg);
@@ -305,7 +306,7 @@ export async function buildLogoKit(b: ResolvedBrand, r: Renderer, outDir: string
     ["light", b.scheme === "light" ? b.roles.background : "#ffffff"],
     ["dark", b.scheme === "dark" ? b.roles.background : b.roles.inverseBackground],
     ...(!b.monochrome ? ([["primary", b.roles.primary]] as [string, Hex][]) : []),
-    ["gradient", `linear-gradient(120deg, ${b.gradient.join(", ")})`],
+    ...(b.gradientIsCaptured ? ([["gradient", `linear-gradient(120deg, ${b.gradient.join(", ")})`]] as [string, string][]) : []),
   ];
   for (const [name, bg] of comps) {
     const solid = bg.startsWith("#") ? (bg as Hex) : b.gradient[Math.floor(b.gradient.length / 2)];
