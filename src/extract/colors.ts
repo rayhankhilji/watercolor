@@ -15,11 +15,13 @@ const CHANNEL_WEIGHT: Record<Channel, number> = { background: 0.42, text: 0.3, b
 
 export interface ColorInputs {
   capture: CaptureResult;
+  /** Approximate page color sampled from the screenshot margins (see marginColor). */
+  screenshotBg?: string | null;
   logoColors: Hex[];
   cssVariables: CssVariable[];
 }
 
-export function extractColors({ capture, logoColors, cssVariables }: ColorInputs): ColorSystem {
+export function extractColors({ capture, logoColors, cssVariables, screenshotBg }: ColorInputs): ColorSystem {
   const home = capture.pages[0].raw;
 
   // 1. Page background = the background color that paints the most area on the homepage.
@@ -27,7 +29,9 @@ export function extractColors({ capture, logoColors, cssVariables }: ColorInputs
     .map(([raw, s]) => ({ c: parseColor(raw), w: s.bg }))
     .filter((x) => x.c && x.c.alpha > 0.9)
     .sort((a, b) => b.w - a.w);
-  const pageBg = bgCandidates[0]?.c?.hex ?? "#ffffff";
+  // Prefer the measured background color closest to what the screenshot margins actually show.
+  const near = screenshotBg ? bgCandidates.filter((x) => distance(x.c!.hex, screenshotBg) < 0.04 && x.w > 0).sort((a, b) => distance(a.c!.hex, screenshotBg) - distance(b.c!.hex, screenshotBg))[0] : undefined;
+  const pageBg = near?.c?.hex ?? bgCandidates[0]?.c?.hex ?? "#ffffff";
 
   // 2. Bucket every observed color (all pages), compositing translucency over the page background.
   const buckets = new Map<Hex, Bucket>();
@@ -185,7 +189,7 @@ function assignRoles(palette: Swatch[], pageBg: Hex, capture: CaptureResult, log
   const heavy = byText.filter((s) => s.weight.text >= maxText * 0.18 && contrast(s.hex, pageBg) >= 4.5);
   const foreground = [...heavy].sort((a, b) => contrast(b.hex, pageBg) - contrast(a.hex, pageBg))[0]?.hex ?? byText[0]?.hex ?? readableOn(pageBg);
   const muted = byText.find((s) => s.hex !== foreground && isNeutral(s.hex, 0.06) && contrast(s.hex, pageBg) >= 3.2 && contrast(s.hex, pageBg) < contrast(foreground, pageBg))?.hex ?? mix(foreground, pageBg, 0.35);
-  const subtle = byText.find((s) => s.hex !== foreground && s.hex !== muted && isNeutral(s.hex, 0.06) && contrast(s.hex, pageBg) < contrast(muted, pageBg))?.hex ?? mix(foreground, pageBg, 0.55);
+  const subtle = byText.find((s) => s.hex !== foreground && s.hex !== muted && isNeutral(s.hex, 0.06) && contrast(s.hex, pageBg) >= 2 && contrast(s.hex, pageBg) < contrast(muted, pageBg))?.hex ?? mix(foreground, pageBg, 0.55);
 
   const bgs = [...palette].filter((s) => s.weight.background > 0).sort((a, b) => b.weight.background - a.weight.background);
   const nearBg = bgs.filter((s) => s.hex !== pageBg && Math.abs(oklch(s.hex).l - bgL) < 0.09 && isNeutral(s.hex, 0.05));
@@ -225,8 +229,13 @@ function assignRoles(palette: Swatch[], pageBg: Hex, capture: CaptureResult, log
   };
   const rankedChromatic = [...chromatic].sort((a, b) => ctaScore(b) - ctaScore(a));
   // Monochrome brands (Notion, Vercel, Linear-ish): primary is the ink color.
-  const monochrome = !rankedChromatic.length || ctaScore(rankedChromatic[0]) < 0.4;
-  const neutralBtn = [...btnBg.entries()].sort((a, b) => b[1] - a[1]).find(([h]) => isNeutral(h, 0.045) && distance(h, pageBg) > 0.1)?.[0];
+  const neutralBtnEntry = [...btnBg.entries()].sort((a, b) => b[1] - a[1]).find(([h]) => isNeutral(h, 0.045) && distance(h, pageBg) > 0.1);
+  const neutralBtn = neutralBtnEntry?.[0];
+  // If the brand's real CTAs are ink (black pills) and the chromatic candidate never fills a button,
+  // the brand is monochrome-led: ink is primary, the hue is an accent.
+  const chromaBtnWeight = rankedChromatic[0] ? btnBg.get(rankedChromatic[0].hex) ?? 0 : 0;
+  const inkLed = !!neutralBtnEntry && neutralBtnEntry[1] >= 6 && chromaBtnWeight < neutralBtnEntry[1] * 0.25;
+  const monochrome = !rankedChromatic.length || ctaScore(rankedChromatic[0]) < 0.4 || inkLed;
   const primary = monochrome ? neutralBtn ?? foreground : rankedChromatic[0].hex;
 
   // Text color actually used on the primary button, else best contrast.

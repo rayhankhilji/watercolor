@@ -35,6 +35,8 @@ export interface ResolvedBrand {
   gradientIsCaptured: boolean;
   /** Still of the brand's signature animated canvas (WebGL hero), relative to the kit — the most authentic art. */
   signatureArt?: string;
+  /** Largest captured hero image (product shot / illustration / photo) — art for flat brands. */
+  heroImage?: string;
   fonts: { display: FontRef; body: FontRef; mono: FontRef };
   type: Record<string, TypeStyle>;
   radius: { none: number; sm: number; md: number; lg: number; xl: number; full: number; button: string; card: string };
@@ -220,6 +222,7 @@ export async function resolveBrand(profile: BrandProfile, strategy: BrandStrateg
     gradient,
     gradientIsCaptured,
     signatureArt: pickSignatureArt(profile),
+    heroImage: pickHeroImage(profile),
     fonts: { display, body, mono },
     type,
     radius,
@@ -254,4 +257,11 @@ function pickSignatureArt(p: BrandProfile): string | undefined {
     .filter((x) => x.poster && x.poster.endsWith(".png") && x.width * x.height >= 300_000)
     .sort((a, b) => b.width * b.height - a.width * a.height)[0];
   return c?.poster;
+}
+
+function pickHeroImage(p: BrandProfile): string | undefined {
+  const img = p.imagery.images
+    .filter((i) => i.path && /\.(png|jpe?g|webp)$/i.test(i.path) && ["screenshot", "illustration", "photo"].includes(i.kind) && i.displayWidth >= 480 && i.displayHeight >= 270)
+    .sort((a, b) => (b.context === "hero" ? 1 : 0) - (a.context === "hero" ? 1 : 0) || b.displayWidth * b.displayHeight - a.displayWidth * a.displayHeight)[0];
+  return img?.path;
 }

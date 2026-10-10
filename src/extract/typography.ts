@@ -89,6 +89,9 @@ export function splitStack(stack: string) {
 export function cleanFamilyName(name: string) {
   let n = name.replace(/^__/, "").replace(/_[a-f0-9]{5,}$/i, "").replace(/_Fallback.*$/i, "").replace(/_/g, " ").trim();
   n = n.replace(/[\s-]*(variable|var|vf|web|webfont|regular)$/i, "").replace(/-+$/, "").trim();
+  // Weight-named families ("Sohne Buch", "Soehne Halbfett", "Inter SemiBold") are one family.
+  n = n.replace(/[\s-]+(extraleicht|leicht|buch|kr(a|ä)ftig|halbfett|dreiviertelfett|fett|extrafett|thin|hairline|extralight|ultralight|light|book|normal|medium|semibold|demibold|bold|extrabold|ultrabold|black|heavy|italic)$/i, "").trim();
+  n = n.replace(/^soehne\b/i, "sohne");
   n = n.replace(/-/g, " ");
   // Restore well-known diacritics / casing.
   const KNOWN: Record<string, string> = { sohne: "Söhne", "sohne mono": "Söhne Mono", "sohne breit": "Söhne Breit", "gt america": "GT America", "gt walsheim": "GT Walsheim", "abc diatype": "ABC Diatype", "pp neue montreal": "PP Neue Montreal", "sf pro display": "SF Pro Display", "sf pro text": "SF Pro Text", "ibm plex sans": "IBM Plex Sans", "ibm plex mono": "IBM Plex Mono" };

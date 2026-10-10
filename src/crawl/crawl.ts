@@ -342,10 +342,13 @@ export async function capture(opts: CaptureOptions): Promise<CaptureResult> {
 
   // ---------------------------------------------------------------- videos
   if (opts.videos !== false) {
-    const domVideos = result.pages.flatMap((p) => p.raw.videos.flatMap((v: { srcs: string[]; poster?: string }) => v.srcs.map((s) => ({ src: s, poster: v.poster }))));
+    // One source per <video> element (prefer MP4 over WebM duplicates of the same clip).
+    const pickSrc = (srcs: string[]) => srcs.find((s) => /\.mp4(\?|$)/i.test(s)) ?? srcs.find((s) => !s.startsWith("blob:")) ?? srcs[0];
+    const domVideos = result.pages.flatMap((p) => p.raw.videos.map((v: { srcs: string[]; poster?: string }) => ({ src: pickSrc(v.srcs), poster: v.poster })));
+    const domAll = new Set(result.pages.flatMap((p) => p.raw.videos.flatMap((v: { srcs: string[] }) => v.srcs)));
     const urls = new Map<string, string | undefined>();
     for (const v of domVideos) if (!v.src.startsWith("blob:")) urls.set(v.src, v.poster);
-    for (const u of result.videoUrls) if (!urls.has(u)) urls.set(u, undefined);
+    for (const u of result.videoUrls) if (!urls.has(u) && !domAll.has(u)) urls.set(u, undefined);
     let n = 0;
     for (const [url, poster] of urls) {
       if (n >= 8) break;

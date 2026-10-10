@@ -59,9 +59,14 @@ function copy(b: ResolvedBrand) {
   return { headline: b.profile.typography.twoTone ? headline : clip(headline, 90), sub, eyebrow };
 }
 
-const art = (b: ResolvedBrand, c: SocialContext, prefer: string[]) => {
+export const art = (b: ResolvedBrand, c: SocialContext, prefer: string[]) => {
   // The brand's own animated surface (captured WebGL/canvas still) beats any generated pattern.
   if (b.signatureArt && prefer.includes("mesh-gradient")) return `url('${c.asset(b.signatureArt)}') center/cover, ${b.roles.background}`;
+  // Flat brands (no measured gradient): never invent one — use their real imagery or a flat texture.
+  if (!b.gradientIsCaptured) {
+    if (b.heroImage) return `url('${c.asset(b.heroImage)}') center/cover, ${b.roles.surface}`;
+    prefer = prefer.filter((p) => !/gradient/.test(p)).concat(["watercolor-wash", "contours"]);
+  }
   for (const p of prefer) if (c.hasPattern(p)) return `url('${c.asset(`patterns/${p}.png`)}')`;
   return `linear-gradient(120deg, ${b.gradient.join(", ")})`;
 };

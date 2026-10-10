@@ -1,7 +1,7 @@
 import path from "node:path";
 import type { ResolvedBrand } from "../../profile/resolve.js";
 import type { Renderer } from "../../render/renderer.js";
-import type { SocialContext } from "./social.js";
+import { art as brandArt, type SocialContext } from "./social.js";
 import { write } from "../../util/fs.js";
 import { readableOn, mix, contrast, oklchCss, rgbCss, isDark } from "../../util/color.js";
 import { esc, clip, firstSentence, typeStyle } from "../html.js";
@@ -192,8 +192,8 @@ export function typeSpecimen(b: ResolvedBrand, c: SocialContext) {
 export async function renderStationery(b: ResolvedBrand, r: Renderer, outDir: string, render: SocialContext, editable: SocialContext) {
   const files: string[] = [];
   const dir = path.join(outDir, "templates");
-  const art = render.hasPattern("mesh-gradient") ? `url('${render.asset("patterns/mesh-gradient.png")}')` : `linear-gradient(120deg, ${b.gradient.join(", ")})`;
-  const artRel = editable.hasPattern("mesh-gradient") ? `url('${editable.asset("patterns/mesh-gradient.png")}')` : art;
+  const art = brandArt(b, render, ["mesh-gradient", "watercolor-wash", "signature-gradient"]);
+  const artRel = brandArt(b, editable, ["mesh-gradient", "watercolor-wash", "signature-gradient"]);
   const logoPng = path.join(outDir, "logo", "png", "logo-512.png");
   files.push(await write(path.join(dir, "email-signature.html"), emailSignature(b, `https://${b.domain}/path/to/logo.png`)));
   files.push(await r.png(`<!doctype html><html><body style="margin:24px;background:#fff">${emailSignature(b, "file://" + logoPng)}</body></html>`, path.join(dir, "email-signature.png"), { width: 520, height: 120, scale: 2 }));

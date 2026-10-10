@@ -289,15 +289,21 @@ export async function extractImagery(capture: CaptureResult, outDir: string): Pr
   const images: ImageAsset[] = [];
   const customerLogos: ImagerySet["customerLogos"] = [];
   const seen = new Set<string>();
+  const brandWord = new URL(capture.finalUrl).hostname.replace(/^www\./, "").split(".")[0].toLowerCase();
+  const notACustomer = (name: string) =>
+    !name || name.toLowerCase().includes(brandWord) || /^(x|twitter|instagram|linkedin|youtube|discord|tiktok|facebook|github|threads|bluesky|reddit)$/i.test(name) || /consent|cookie|badge|compliance|soc ?2|hipaa|gdpr|iso ?27001|award|g2|capterra|app store|google play/i.test(name);
   for (const p of capture.pages) {
+    // Brand/press pages show the company's own logos in grids — not customers.
+    const isBrandPage = p.kind === "brand";
     for (const im of p.raw.images as RawImg[]) {
       if (seen.has(im.src)) continue;
       seen.add(im.src);
       const file = byUrl.get(im.src)?.path;
       const format = file ? path.extname(file).slice(1) : path.extname(new URL(im.src, p.url).pathname).slice(1) || "img";
       if (im.context === "logo-wall") {
+        if (isBrandPage) continue;
         const name = cleanLogoName(im.alt) || cleanLogoName(path.basename(new URL(im.src, p.url).pathname).replace(/\.[^.]+$/, ""));
-        if (name && !customerLogos.some((c) => c.name.toLowerCase() === name.toLowerCase())) customerLogos.push({ name, url: im.src, path: file });
+        if (name && !notACustomer(name) && !customerLogos.some((c) => c.name.toLowerCase() === name.toLowerCase())) customerLogos.push({ name, url: im.src, path: file });
         continue;
       }
       const kind = classifyImage(im, format);
@@ -305,13 +311,14 @@ export async function extractImagery(capture: CaptureResult, outDir: string): Pr
     }
     // Inline-SVG logo walls
     type WallSvg = { html: string; label: string; w: number; h: number };
-    for (const w of (p.raw.wallSvgs ?? []) as WallSvg[]) {
+    for (const w of (isBrandPage ? [] : (p.raw.wallSvgs ?? [])) as WallSvg[]) {
       const svg = optimizeSvg(w.html);
       const key = hash(svg);
       if (seen.has(key)) continue;
       seen.add(key);
       // Unlabelled marks are kept as files but get no (invented) name.
-      const name = cleanLogoName(w.label);
+      let name = cleanLogoName(w.label);
+      if (name && notACustomer(name)) continue;
       const file = path.join(outDir, "captured", "customer-logos", `${name ? slug(name) : `unlabelled-${key.slice(0, 6)}`}.svg`);
       await write(file, svg);
       if (!name || !customerLogos.some((c) => c.name.toLowerCase() === name.toLowerCase())) customerLogos.push({ name, url: "inline-svg", path: file });
@@ -456,7 +463,8 @@ export function extractComponents(capture: CaptureResult, pageBg: Hex, primary: 
   const all = <K extends string>(k: K) => capture.pages.flatMap((p, i) => (p.raw[k as keyof typeof p.raw] as Raw[]).map((r) => ({ ...r, page: i, rect: { ...r.rect, y: r.rect.y + i * 100000 } })));
   const shotOf = (r: Raw) => (r.page === 0 ? shots.get(r.id) : undefined);
   const hoverOf = (r: Raw) => (r.page === 0 ? hovers.get(r.id) : undefined);
-  const buttons = group(all("buttons"), "button", buttonVariant, 8);
+  const NOT_A_CTA = /^(consent preferences|cookie|accept|reject|decline|manage cookies|linkedin|twitter|x|instagram|youtube|facebook|tiktok|github|discord|download on the app store|get it on google play)$|^[←→‹›<>↑↓×✕+−-]+$/i;
+  const buttons = group(all("buttons").filter((r) => !NOT_A_CTA.test(r.text.trim())), "button", buttonVariant, 8);
   // Make sure a "primary" exists and is first.
   buttons.sort((a, b) => (a.variant === "primary" ? -1 : b.variant === "primary" ? 1 : 0));
 

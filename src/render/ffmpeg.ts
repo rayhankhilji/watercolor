@@ -116,3 +116,35 @@ export async function extractFrame(input: string, out: string, at = 0.5) {
   await runFfmpeg(bin, ["-ss", String(at), "-i", input, "-frames:v", "1", out]);
   return out;
 }
+
+/**
+ * Dominant color along the left/right margins of a (full-page) screenshot — the color the page
+ * is actually painted on. Returns null when ffmpeg is unavailable or there's no clear winner.
+ */
+export async function marginColor(image: string): Promise<string | null> {
+  const bin = await findFfmpeg();
+  if (!bin) return null;
+  const { spawnSync: run } = await import("node:child_process");
+  const W = 48;
+  const r = run(bin, ["-v", "error", "-i", image, "-vf", `scale=${W}:-1:flags=area`, "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], { maxBuffer: 64 * 1024 * 1024 });
+  if (r.status !== 0 || !r.stdout?.length) return null;
+  const px = r.stdout as Buffer;
+  const rows = Math.floor(px.length / (W * 3));
+  // Vote with 4-bit buckets (robust to JPEG noise), then return the true mean of the winning bucket.
+  const buckets = new Map<string, { n: number; r: number; g: number; b: number }>();
+  for (let y = 0; y < rows; y++) {
+    for (const x of [0, 1, W - 2, W - 1]) {
+      const i = (y * W + x) * 3;
+      const key = [px[i], px[i + 1], px[i + 2]].map((v) => v >> 4).join(",");
+      const e = buckets.get(key) ?? { n: 0, r: 0, g: 0, b: 0 };
+      e.n++;
+      e.r += px[i];
+      e.g += px[i + 1];
+      e.b += px[i + 2];
+      buckets.set(key, e);
+    }
+  }
+  const best = [...buckets.values()].sort((a, b) => b.n - a.n)[0];
+  if (!best || best.n / (rows * 4) < 0.35) return null;
+  return "#" + [best.r, best.g, best.b].map((v) => Math.round(v / best.n).toString(16).padStart(2, "0")).join("");
+}

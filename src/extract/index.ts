@@ -11,6 +11,7 @@ import { extractLogo, extractIcons, extractImagery, extractMedia, extractCompone
 import { extractVoice, extractIdentity, extractCompany } from "./voice.js";
 import { log } from "../util/log.js";
 import { VERSION } from "../version.js";
+import { marginColor } from "../render/ffmpeg.js";
 
 export async function buildProfile(capture: CaptureResult, outDir: string): Promise<BrandProfile> {
   log.step("Analyzing stylesheets");
@@ -24,7 +25,9 @@ export async function buildProfile(capture: CaptureResult, outDir: string): Prom
 
   log.step("Building color system");
   const logoColors = [...(logo.primary?.colors ?? []), ...(logo.mark?.colors ?? [])];
-  const colors = extractColors({ capture, logoColors, cssVariables });
+  const shot = capture.pages[0].fullPage ?? capture.pages[0].screenshot;
+  const screenshotBg = shot ? await marginColor(shot).catch(() => null) : null;
+  const colors = extractColors({ capture, logoColors, cssVariables, screenshotBg });
 
   log.step("Building type, spacing, shape, layout & motion systems");
   const typography = extractTypography(capture, css);
