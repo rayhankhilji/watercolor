@@ -70,10 +70,11 @@ program
   .option("--fast", "smaller, faster motion renders")
   .option("--fps <n>", "motion frame rate", (v) => parseInt(v, 10))
   .option("--no-guidelines", "skip the brand book")
+  .option("--only <parts>", "comma-separated: tokens,logo,patterns,social,stationery,motion,docs,guidelines")
   .action(async (dir: string, o) => {
     banner();
     await requireProfile(dir);
-    await build({ dir, motion: o.motion, fast: o.fast, fps: o.fps, guidelines: o.guidelines });
+    await build({ dir, motion: o.motion, fast: o.fast, fps: o.fps, guidelines: o.guidelines, only: o.only ? String(o.only).split(",").map((s: string) => s.trim()) : undefined });
     done(dir);
   });
 

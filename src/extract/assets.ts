@@ -461,7 +461,8 @@ export function extractComponents(capture: CaptureResult, pageBg: Hex, primary: 
 
   const buttonVariant = (r: Raw) => {
     const bg = parseColor(r.styles["background-color"]);
-    const bw = parseFloat(r.styles["border-top-width"] || "0");
+    const bc = parseColor(r.styles["border-top-color"]);
+    const bw = bc && bc.alpha > 0.1 ? parseFloat(r.styles["border-top-width"] || "0") : 0;
     if (!bg || bg.alpha < 0.1) return bw > 0 ? "secondary" : "ghost";
     const hex = composite(bg, pageBg);
     if (distance(hex, primary) < 0.03) return "primary";
@@ -473,7 +474,7 @@ export function extractComponents(capture: CaptureResult, pageBg: Hex, primary: 
   const all = <K extends string>(k: K) => capture.pages.flatMap((p, i) => (p.raw[k as keyof typeof p.raw] as Raw[]).map((r) => ({ ...r, page: i, rect: { ...r.rect, y: r.rect.y + i * 100000 } })));
   const shotOf = (r: Raw) => (r.page === 0 ? shots.get(r.id) : undefined);
   const hoverOf = (r: Raw) => (r.page === 0 ? hovers.get(r.id) : undefined);
-  const NOT_A_CTA = /^(consent preferences|cookie|accept|reject|decline|manage cookies|linkedin|twitter|x|instagram|youtube|facebook|tiktok|github|discord|download on the app store|get it on google play)$|^[←→‹›<>↑↓×✕+−-]+$/i;
+  const NOT_A_CTA = /^(english|español|deutsch|français|italiano|português|日本語|한국어|中文)\b|\blanguage\b|^(consent preferences|cookie|accept|reject|decline|manage cookies|linkedin|twitter|x|instagram|youtube|facebook|tiktok|github|discord|download on the app store|get it on google play)$|^[←→‹›<>↑↓×✕+−-]+$/i;
   const buttons = group(all("buttons").filter((r) => !NOT_A_CTA.test(r.text.trim())), "button", buttonVariant, 8);
   // Make sure a "primary" exists and is first.
   buttons.sort((a, b) => (a.variant === "primary" ? -1 : b.variant === "primary" ? 1 : 0));
