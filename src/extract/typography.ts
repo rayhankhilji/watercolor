@@ -309,13 +309,25 @@ export function extractTypography(capture: CaptureResult, css: CssSummary): Typo
   const measure = capture.pages[0].raw.measure ? Math.round(capture.pages[0].raw.measure as number) : undefined;
 
   // Two-tone headlines: ≥2 headings whose text runs in two clearly different colors.
-  type H = { tag: string; text: string; colors?: string[] };
-  const twoToned = capture.pages.flatMap((p) => p.raw.headings as H[]).filter((h) => (h.tag === "h1" || h.tag === "h2") && (h.colors?.length ?? 0) >= 2);
-  let twoTone: TypographySystem["twoTone"];
-  if (twoToned.length >= 2) {
-    const a = parseColor(twoToned[0].colors![0])?.hex;
-    const b2 = parseColor(twoToned[0].colors![1])?.hex;
-    if (a && b2 && a !== b2) twoTone = { primary: a, secondary: b2, examples: twoToned.slice(0, 4).map((h) => h.text) };
+  // Each heading's colors are ordered by characters set; a real two-tone treatment gives the
+  // second color a substantial share (not a stray badge or ticker inside the heading).
+  type C = { c: string; n: number } | string;
+  type H = { tag: string; text: string; colors?: C[] };
+  const pairs = new Map<string, { a: string; b: string; texts: Set<string> }>();
+  for (const h of capture.pages.flatMap((p) => p.raw.headings as H[])) {
+    if (!(h.tag === "h1" || h.tag === "h2") || !h.colors || h.colors.length < 2) continue;
+    const cs = h.colors.map((x) => (typeof x === "string" ? { c: x, n: 1 } : x));
+    const total = cs.reduce((s, x) => s + x.n, 0);
+    if (typeof h.colors[0] !== "string" && cs[1].n / total < 0.2) continue;
+    const a = parseColor(cs[0].c)?.hex;
+    const b2 = parseColor(cs[1].c)?.hex;
+    if (!a || !b2 || a === b2) continue;
+    const key = a + b2;
+    const e = pairs.get(key) ?? { a, b: b2, texts: new Set<string>() };
+    e.texts.add(h.text);
+    pairs.set(key, e);
   }
+  const best = [...pairs.values()].sort((x, y) => y.texts.size - x.texts.size)[0];
+  const twoTone: TypographySystem["twoTone"] = best && best.texts.size >= 2 ? { primary: best.a, secondary: best.b, examples: [...best.texts].slice(0, 4) } : undefined;
   return { families, styles: named, scale: { sizes, base, ratio, ratioName }, features, measure, twoTone };
 }

@@ -19,7 +19,7 @@ export function extractVoice(capture: CaptureResult): VoiceCorpus {
       const styled = (b.styles["background-color"] && b.styles["background-color"] !== "rgba(0, 0, 0, 0)") || parseFloat(b.styles["border-top-width"] || "0") > 0;
       if (styled) ctaCounts.set(b.text, (ctaCounts.get(b.text) || 0) + 1);
     }
-  const ctas = [...ctaCounts.entries()].sort((a, b) => b[1] - a[1]).map(([t]) => t).filter((t) => t.length <= 32).slice(0, 24);
+  const ctas = [...ctaCounts.entries()].sort((a, b) => b[1] - a[1]).map(([t]) => t).filter((t) => t.length <= 32 && !/consent|cookie|preferences|privacy|language|english|sign in|log in|login|menu|close|search|linkedin|twitter|instagram|youtube|facebook|tiktok|github|discord|^[←→‹›<>]+$/i.test(t)).slice(0, 24);
   const navigation = uniq(capture.pages[0].raw.nav as string[]).slice(0, 24);
   const paragraphs = uniq(capture.pages.flatMap((p) => p.raw.paragraphs as string[])).slice(0, 60);
   const microcopy = uniq(capture.pages.flatMap((p) => p.raw.microcopy as string[])).slice(0, 40);

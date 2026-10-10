@@ -510,14 +510,18 @@ export function collectPage(opts: { maxElements: number; brandHint: string; page
       const cs = getComputedStyle(h);
       const hr = h.getBoundingClientRect();
       // Distinct text colors inside the heading (two-tone headline treatments).
-      const tcols: string[] = [];
+      const tchars: Record<string, number> = {};
       const walk = document.createTreeWalker(h, NodeFilter.SHOW_TEXT);
       let tn: Node | null;
       while ((tn = walk.nextNode())) {
-        if (!(tn.textContent || "").trim() || !tn.parentElement) continue;
-        const col = getComputedStyle(tn.parentElement).color;
-        if (!tcols.includes(col)) tcols.push(col);
+        const txt = (tn.textContent || "").trim();
+        if (!txt || !tn.parentElement) continue;
+        const pcs = getComputedStyle(tn.parentElement);
+        if (pcs.visibility === "hidden" || parseFloat(pcs.opacity) < 0.1) continue;
+        tchars[pcs.color] = (tchars[pcs.color] || 0) + txt.length;
       }
+      // Colors ordered by how much of the heading they set.
+      const tcols = Object.entries(tchars).sort((a, b) => b[1] - a[1]).map(([c, n]) => ({ c, n }));
       headings.push({ colors: tcols, tag: h.tagName.toLowerCase(), text: t, size: parseFloat(cs.fontSize), y: hr.top + scrollY, centered: cs.textAlign === "center" || (Math.abs(hr.left + hr.width / 2 - W / 2) < 24 && hr.width < W * 0.8) });
     }
   });

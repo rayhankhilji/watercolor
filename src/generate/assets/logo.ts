@@ -4,7 +4,7 @@ import type { ResolvedBrand } from "../../profile/resolve.js";
 import type { Hex } from "../../profile/schema.js";
 import type { Renderer } from "../../render/renderer.js";
 import { write, writeJson, ensureDir } from "../../util/fs.js";
-import { isDark, readableOn, distance, mix } from "../../util/color.js";
+import { isDark, readableOn, distance, mix, contrast } from "../../util/color.js";
 import { optimizeSvg } from "../../extract/assets.js";
 import { esc, fontFaces } from "../html.js";
 import { log } from "../../util/log.js";
@@ -43,8 +43,11 @@ export function logoMarkup(b: ResolvedBrand, o: LogoMarkupOpts): string {
   let svg = wantMark ? b.logo.markSvg ?? b.logo.primarySvg : b.logo.primarySvg;
   const file = wantMark ? b.logo.mark ?? b.logo.primary : b.logo.primary;
   if (svg) {
-    const colors = (wantMark ? b.profile.logo.mark?.colors : b.profile.logo.primary?.colors) ?? [];
-    const lowContrast = colors.length > 0 && colors.every((c) => distance(c, o.on) < 0.22);
+    const declared = (wantMark ? b.profile.logo.mark?.colors : b.profile.logo.primary?.colors) ?? [];
+    // An SVG that declares no paint renders black.
+    const colors = declared.length ? declared : ["#000000"];
+    // Recolor when most of the mark would sink into the background (WCAG < 2.2:1).
+    const lowContrast = colors.filter((c) => contrast(c, o.on) < 2.2).length >= Math.ceil(colors.length / 2);
     if (o.color) svg = recolorSvg(svg, o.color);
     else if (lowContrast) svg = recolorSvg(svg, readableOn(o.on, [b.roles.foreground, b.roles.background, "#ffffff", "#0a0a0a"]));
     const { w, h } = svgSize(svg);

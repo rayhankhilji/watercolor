@@ -206,7 +206,9 @@ export async function resolveBrand(profile: BrandProfile, strategy: BrandStrateg
   const v = profile.voice;
   const headline = strategy.copy?.headlines?.[0] ?? profile.identity.tagline ?? v.headlines[0] ?? profile.identity.name;
   const subhead = strategy.company?.oneLiner ?? profile.identity.description ?? v.paragraphs[0] ?? "";
-  const ctas = v.ctas.filter((c) => c.split(" ").length <= 4 && !/sign in|log in|menu|close|search/i.test(c));
+  const notCta = /consent|cookie|preferences|privacy|language|english|sign in|log in|login|menu|close|search|linkedin|twitter|instagram|youtube|facebook|tiktok|github|discord|^[←→‹›<>]+$/i;
+  const primaryBtn2 = profile.components.buttons.find((x) => x.variant === "primary");
+  const ctas = [primaryBtn2?.text, ...v.ctas].filter((c): c is string => !!c && c.split(" ").length <= 5 && !notCta.test(c)).filter((c, i, a) => a.indexOf(c) === i);
   return {
     dir,
     profile,
@@ -260,8 +262,13 @@ function pickSignatureArt(p: BrandProfile): string | undefined {
 }
 
 function pickHeroImage(p: BrandProfile): string | undefined {
+  const brandWord = p.identity.domain.split(".")[0].toLowerCase();
+  const ogFile = p.logo.ogImage ? p.logo.ogImage.split("/").pop() : undefined;
+  // Real product UI and illustration beat photos (which are often video stills with logos baked in).
+  const rank = { screenshot: 3, illustration: 2, photo: 1 } as Record<string, number>;
   const img = p.imagery.images
-    .filter((i) => i.path && /\.(png|jpe?g|webp)$/i.test(i.path) && ["screenshot", "illustration", "photo"].includes(i.kind) && i.displayWidth >= 480 && i.displayHeight >= 270)
-    .sort((a, b) => (b.context === "hero" ? 1 : 0) - (a.context === "hero" ? 1 : 0) || b.displayWidth * b.displayHeight - a.displayWidth * a.displayHeight)[0];
+    .filter((i) => i.path && /\.(png|jpe?g|webp)$/i.test(i.path) && rank[i.kind] && i.displayWidth >= 480 && i.displayHeight >= 270)
+    .filter((i) => !/og|opengraph|social|share|thumbnail|poster|logo|press/i.test(`${i.alt} ${i.url}`) && !(i.alt || "").toLowerCase().includes(brandWord) && (!ogFile || !i.path!.endsWith(ogFile)))
+    .sort((a, b) => rank[b.kind] - rank[a.kind] || (b.context === "hero" ? 1 : 0) - (a.context === "hero" ? 1 : 0) || b.displayWidth * b.displayHeight - a.displayWidth * a.displayHeight)[0];
   return img?.path;
 }
