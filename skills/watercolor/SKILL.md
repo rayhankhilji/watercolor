@@ -33,6 +33,7 @@ If the site blocks headless browsers or a page fails, say so plainly and continu
    - the category playbook(s) that fit: `references/categories/{b2b-saas,ai,devtools,fintech,consumer}.md`
    - `references/voice.md` for the voice section; `color.md`, `typography.md`, `motion.md` when judging those systems
    - `references/modes.md` if mode ≠ extract
+   - `references/examples/*.strategy.json` — two finished strategies (Stripe, Wispr Flow) showing the expected depth and specificity
 
 ## 3. Write `brand/strategy.json`
 
@@ -79,6 +80,8 @@ Summarize for the user: what the brand *is* (one paragraph), the key system (pri
 | `reimagine` | The company is the brief, not the current design. Propose a distinctive new identity via `overrides` (palette, fonts, radius, gradient) using the category playbook. Zero anti-slop violations. |
 
 Switch modes on an existing kit: `scripts/watercolor.sh mode evolve brand`, update `strategy.json`, rebuild.
+
+After upgrading watercolor, `scripts/watercolor.sh profile brand` re-derives `brand.json` from the saved capture without re-crawling.
 
 ## Optional extras
 

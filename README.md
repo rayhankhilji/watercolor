@@ -93,6 +93,16 @@ url ──▶ capture ──▶ extract ──▶ brief.md ──▶ agent write
 3. **Strategy** — the agent reads `brief.md`, the screenshots and the [reference library](skills/watercolor/references/) and writes [`strategy.json`](src/profile/strategy.ts). No agent? `watercolor synthesize` does it with Claude via the API.
 4. **Build** — deterministic generators render everything with headless Chromium and ffmpeg.
 
+## Use with any agent
+
+The skill is plain Markdown + a CLI, so it works beyond Claude Code. With Cursor, Codex, Gemini CLI or any coding agent:
+
+1. `watercolor extract https://example.com -o brand`
+2. Ask the agent: *"Read brand/.watercolor/brief.md and skills/watercolor/references/, look at the screenshots it lists, and write brand/strategy.json."*
+3. `watercolor build brand`
+
+Then point your agent rules file (`AGENTS.md`, `.cursorrules`, `CLAUDE.md`) at `brand/WATERCOLOR.md`.
+
 ## Modes
 
 | | |
@@ -113,6 +123,7 @@ watercolor mode evolve brand && watercolor build brand
 watercolor <url>                 extract + build
 watercolor extract <url>         capture → brand.json + .watercolor/brief.md
 watercolor build [dir]           render everything from brand.json + strategy.json
+watercolor profile [dir]         rebuild brand.json from the saved capture (no re-crawl)
 watercolor brief [dir]           (re)write the agent brief
 watercolor mode <mode> [dir]     switch extract | extend | evolve | reimagine
 watercolor synthesize [dir]      write strategy.json with Claude (ANTHROPIC_API_KEY)

@@ -61,7 +61,6 @@ export async function buildProfile(capture: CaptureResult, outDir: string): Prom
   }
 
   const profile: BrandProfile = {
-    $schema: "https://raw.githubusercontent.com/rayhankhilji/watercolor/main/docs/brand.schema.json",
     version: PROFILE_VERSION,
     generatedAt: new Date().toISOString(),
     source: {

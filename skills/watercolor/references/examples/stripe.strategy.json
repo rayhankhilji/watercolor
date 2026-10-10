@@ -1,0 +1,288 @@
+{
+  "version": "1",
+  "mode": "extract",
+  "company": {
+    "name": "Stripe",
+    "oneLiner": "Programmable financial infrastructure — payments, billing and money movement — for businesses from first transaction to billionth.",
+    "description": "Stripe builds the economic infrastructure of the internet: APIs and products for accepting payments, running any billing model, issuing cards, moving money with stablecoins, and embedding financial services into platforms. It sells to startups, platforms and the Fortune 100 alike, with developers as the first audience and finance and product leaders as the buyers.",
+    "category": "Financial infrastructure (fintech + developer platform)",
+    "businessModel": "B2B",
+    "stage": "Global category leader (5M+ businesses, 50% of the Fortune 100)",
+    "audience": {
+      "primary": "Developers and product teams building revenue into internet businesses",
+      "buyer": "CFOs, heads of payments and product leaders at startups, platforms and enterprises",
+      "user": "Engineers integrating the API; finance and ops teams living in the Dashboard"
+    },
+    "jobsToBeDone": [
+      "Accept payments globally, online and in person",
+      "Run any billing or pricing model",
+      "Embed payments and financial services into a platform",
+      "Move money across borders, including stablecoins",
+      "Stay compliant and prevent fraud"
+    ],
+    "competitors": [
+      "Adyen",
+      "PayPal / Braintree",
+      "Checkout.com",
+      "Square"
+    ],
+    "differentiators": [
+      "Developer-first, unified API surface across every money movement",
+      "Breadth: payments, billing, issuing, treasury, tax, stablecoins in one platform",
+      "Proof at scale: 99.999% historical uptime, 135+ currencies, US$1.9tn processed in 2025",
+      "Design and craft as a trust signal — the documentation and website set the standard"
+    ]
+  },
+  "positioning": {
+    "statement": "For internet businesses of every size, Stripe is the financial infrastructure that turns revenue into a programmable, global, reliable system — so a company can start on day one and still be running on Stripe at its billionth transaction.",
+    "promise": "From your first transaction to your billionth.",
+    "pillars": [
+      {
+        "name": "Infrastructure, not a feature",
+        "description": "Payments, billing, issuing and money movement as one programmable foundation — 'designed to work individually or together'."
+      },
+      {
+        "name": "Proven at planetary scale",
+        "description": "Numbers carry the argument: 99.999% uptime, 135+ currencies, trillions processed, half the Fortune 100."
+      },
+      {
+        "name": "Built for what's next",
+        "description": "Agentic commerce, stablecoins, AI-native startups — Stripe positions itself as the economic layer for new business models."
+      }
+    ]
+  },
+  "personality": {
+    "summary": "Stripe reads like an exceptionally well-run institution that still writes like an engineer: calm, exact, ambitious about the scale of the internet economy, and quietly beautiful. It never raises its voice — no exclamation marks, light-weight type, one action color — and lets precision and proof do the persuading.",
+    "archetype": "The Architect — builds the systems others build on (echoed by the engraved archway on the About page).",
+    "traits": [
+      {
+        "trait": "Precise",
+        "notThis": "Pedantic",
+        "description": "Headlines name exact mechanisms and figures ('135+ currencies', 'two business days'), but sentences still flow."
+      },
+      {
+        "trait": "Ambitious",
+        "notThis": "Grandiose",
+        "description": "Talks about 'the economic infrastructure of the internet' and 'global GDP running on Stripe' — then backs it with numbers."
+      },
+      {
+        "trait": "Calm",
+        "notThis": "Cold",
+        "description": "Light Söhne, generous whitespace and slate text make it composed; the living gradient keeps it warm."
+      },
+      {
+        "trait": "Crafted",
+        "notThis": "Precious",
+        "description": "Every product card is staged with care, shadows are tinted, curves are tuned — craft as evidence of reliability, not decoration."
+      },
+      {
+        "trait": "Builder-minded",
+        "notThis": "Jargon-heavy",
+        "description": "Writes for developers and finance leaders at once: technical nouns, plain verbs."
+      }
+    ],
+    "spectrum": {
+      "formalCasual": 0.3,
+      "seriousPlayful": 0.25,
+      "technicalAccessible": 0.45,
+      "restrainedExpressive": 0.4,
+      "classicModern": 0.75,
+      "quietLoud": 0.3
+    }
+  },
+  "voice": {
+    "summary": "Declarative, specific and unhurried. Stripe states what it does in one confident sentence, then extends the thought in a second clause or sentence that adds the mechanism or the scale. It speaks to businesses ('your revenue', 'your business') in sentence case, uses numerals for everything, and never uses exclamation marks or emoji.",
+    "principles": [
+      {
+        "name": "Lead with the outcome, extend with the mechanism",
+        "description": "The signature two-part headline: a short claim, then a longer clarifying clause.",
+        "do": "Financial infrastructure to grow your revenue. Accept payments, offer financial services and implement custom revenue models.",
+        "dont": "Supercharge your revenue with seamless payments!"
+      },
+      {
+        "name": "Prove it with a number",
+        "description": "Scale is shown, not asserted — currencies, uptime, share of the Fortune 100.",
+        "do": "50% of Fortune 100 companies have used Stripe to grow their businesses.",
+        "dont": "Trusted by the world's biggest brands."
+      },
+      {
+        "name": "Name the real thing",
+        "description": "Product nouns over abstractions: billing model, card issuing programme, stablecoins, embedded payments.",
+        "do": "Create a card issuing programme.",
+        "dont": "Unlock new possibilities for your money."
+      },
+      {
+        "name": "Quiet confidence",
+        "description": "No hype verbs, no exclamation marks, periods on statements. Enthusiasm lives in scope, not punctuation.",
+        "do": "The backbone of global commerce",
+        "dont": "The #1 game-changing payments platform 🚀"
+      }
+    ],
+    "vocabulary": {
+      "use": [
+        "financial infrastructure",
+        "revenue",
+        "businesses",
+        "platforms",
+        "billing model",
+        "money movement",
+        "global",
+        "integrate",
+        "embedded",
+        "stablecoins",
+        "agentic commerce",
+        "from first transaction to billionth"
+      ],
+      "avoid": [
+        "unlock",
+        "supercharge",
+        "seamless",
+        "revolutionize",
+        "game-changer",
+        "cutting-edge",
+        "all-in-one",
+        "magic"
+      ]
+    },
+    "mechanics": [
+      "Sentence case for all headings and buttons.",
+      "Headlines may end with a period when they are full sentences; short section labels don't.",
+      "Numerals for all figures, with units and qualifiers ('99.999% historical uptime', 'US$1.9tn').",
+      "En/em dashes for extending clauses ('– from your first transaction to your billionth').",
+      "Oxford comma in lists.",
+      "Spelling follows locale (the UK site uses 'optimise', 'programme').",
+      "CTAs are short imperatives with a chevron: 'Start now ›', 'Contact sales ›'."
+    ],
+    "examples": [
+      {
+        "context": "Homepage hero",
+        "onBrand": "Revenue infrastructure for the internet. Accept payments, run any billing model and move money in 135+ currencies.",
+        "offBrand": "The all-in-one payments platform to supercharge your growth!"
+      },
+      {
+        "context": "Feature card",
+        "onBrand": "Enable any billing model",
+        "offBrand": "Flexible billing made seamless"
+      },
+      {
+        "context": "Error message",
+        "onBrand": "Your card was declined. Try a different payment method or contact your bank.",
+        "offBrand": "Oops! Something went wrong 😕"
+      },
+      {
+        "context": "Launch announcement",
+        "onBrand": "Stripe launches new products to bring stablecoins and agentic commerce into the mainstream.",
+        "offBrand": "Introducing the future of money ✨"
+      },
+      {
+        "context": "Enterprise CTA section",
+        "onBrand": "Transform your enterprise with agile financial infrastructure.",
+        "offBrand": "Enterprise-grade solutions for enterprise-grade needs."
+      },
+      {
+        "context": "Social post",
+        "onBrand": "URBN consolidated $5 billion in online and in-store revenue onto Stripe. Here's how.",
+        "offBrand": "Big brands love Stripe! Find out why 👇"
+      }
+    ],
+    "taglines": [
+      "From your first transaction to your billionth.",
+      "The backbone of global commerce.",
+      "Financial infrastructure for the internet."
+    ]
+  },
+  "visual": {
+    "summary": "A white, light-slate canvas where large Söhne Light headlines do the talking, one blurple (#533AFD) does the acting, and a living purple–magenta–orange gradient does the feeling. Product UI is staged like jewellery on soft gradient-lit cards. Everything is precise: a 4px grid, small radii, blue-tinted layered shadows.",
+    "principles": [
+      {
+        "name": "Two-tone headlines",
+        "description": "The first sentence sets in ink (#061B31); the continuation sets in slate (#50617A) at the same size and weight. Hierarchy by color within one line, not by bold."
+      },
+      {
+        "name": "One action color",
+        "description": "Blurple #533AFD appears on primary CTAs, links and focus — rarely as a surface. The older #635BFF survives on secondary pages and pill CTAs; new work uses #533AFD."
+      },
+      {
+        "name": "The gradient is the emotion",
+        "description": "Saturated purple → magenta → orange appears as a living WebGL ribbon in the hero and as soft backlighting behind product cards — never behind body text."
+      },
+      {
+        "name": "Product as jewellery",
+        "description": "Real UI (checkout, billing, terminal, cards) staged on light cards with gradient glows and tinted shadows; never generic illustration."
+      },
+      {
+        "name": "Engineered depth",
+        "description": "Elevation uses layered, blue-tinted shadows (rgba(50,50,93,.25) + rgba(0,0,0,.3)) — never neutral gray blur."
+      }
+    ],
+    "colorUsage": "Neutral white and slate surfaces carry the page; ink (#061B31/#0A2540) sets headlines; slate (#425466/#50617A) sets body; blurple (#533AFD) is reserved for action; the gradient (#533AFD → #F848F5 → #FF6118) appears once per section at most as an atmospheric surface.",
+    "typography": "Söhne Light (300) at 48–56px with −0.02em tracking and tight 1.03–1.15 leading; weight almost never rises above 400 for headings — size and the two-tone color split carry hierarchy. Body is Söhne Light 16/1.4 in slate. Source Code Pro for code. Tabular, exact numerals in stat rows.",
+    "layout": "Left-aligned editorial layout on a 1080px measure with a 4px spacing grid; large stat rows with light numerals; bento-like product grids where each card is a staged UI moment, not an icon + text.",
+    "imagery": "Real product UI first; editorial customer photography (aerial, architectural) for stories; engraved/line-art illustration for institutional pages (About); 3D/WebGL for signature moments (the ribbon, the particle globe).",
+    "iconography": "Small, quiet line and solid glyphs in slate; icons support labels, never replace them.",
+    "shape": "Subtle: 4–8px radii on UI, pills only for small badges; 1px #E5EDF5 hairlines frame the grid.",
+    "do": [
+      "Set headlines in Söhne 300 with −0.02em tracking and split long headlines into ink + slate halves.",
+      "Show real product UI on light cards backlit by the gradient.",
+      "Use the blue-tinted two-layer shadow for elevation.",
+      "Back every claim with a figure from the proof set (uptime, currencies, volume, Fortune 100)."
+    ],
+    "dont": [
+      "Don't bold headlines or use heavy weights for hierarchy.",
+      "Don't put body text on the gradient or use the gradient on buttons.",
+      "Don't use pure black — ink is navy (#061B31 / #0A2540).",
+      "Don't round cards beyond 8px or turn primary CTAs into pills — current CTAs are 4px."
+    ]
+  },
+  "motion": {
+    "summary": "Two speeds. UI motion is fast and decisive — 150ms colour/hover changes and 300ms reveals on easeOutCubic. Ambient motion is cinematic — the hero ribbon and particle globe are real-time WebGL that drifts slower than reading speed, giving the page a living, engineered feel.",
+    "principles": [
+      {
+        "name": "Decisive feedback",
+        "description": "Hover and press states resolve in 150ms on cubic-bezier(0.215, 0.61, 0.355, 1); nothing bounces."
+      },
+      {
+        "name": "Ambient, not attention-seeking",
+        "description": "WebGL surfaces move continuously but slowly; they sit behind or beside content, never compete with the headline."
+      },
+      {
+        "name": "Reveal with intent",
+        "description": "Product cards and stats ease in on scroll (300–600ms) to show the system assembling."
+      }
+    ],
+    "signature": "The hero's flowing purple–magenta–orange ribbon — a real-time WebGL surface (captured in captured/canvas/ with its shader sources) that turns 'money in motion' into an image."
+  },
+  "logo": {
+    "clearspace": "At least the height of the 's' in the wordmark on all sides.",
+    "minSize": "16px tall for the wordmark on screen; use the favicon mark below that.",
+    "misuse": [
+      "Recolor it outside ink (#0A2540), white or blurple",
+      "Place it on the gradient without enough contrast",
+      "Add effects, outlines or shadows",
+      "Stretch, rotate or re-typeset it"
+    ]
+  },
+  "colorNames": {
+    "#533afd": "Blurple",
+    "#635bff": "Classic Blurple",
+    "#0a2540": "Downriver",
+    "#061b31": "Ink",
+    "#425466": "Slate",
+    "#50617a": "Slate Light",
+    "#f6f9fc": "Fog",
+    "#e5edf5": "Hairline",
+    "#f848f5": "Magenta",
+    "#ff6118": "Ember"
+  },
+  "copy": {
+    "headlines": [
+      "Financial infrastructure to grow your revenue.",
+      "The backbone of global commerce.",
+      "From your first transaction to your billionth."
+    ],
+    "taglines": [
+      "From your first transaction to your billionth."
+    ],
+    "announcement": "Introducing agentic commerce on Stripe"
+  }
+}

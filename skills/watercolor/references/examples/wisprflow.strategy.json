@@ -1,0 +1,111 @@
+{
+  "version": "1",
+  "mode": "extract",
+  "company": {
+    "name": "Wispr Flow",
+    "oneLiner": "Voice-to-text AI that turns natural speech into clear, polished writing in every app — 4x faster than typing.",
+    "description": "Wispr Flow is a voice interface for writing. Hold a key, speak naturally, and Flow writes clean, formatted text in any app on Mac, Windows, iPhone and Android — in 100+ languages, adapting to your style. It adds an AI notetaker for meetings, and sells to individuals (free and Pro) and to teams and enterprises with SOC 2 and HIPAA compliance.",
+    "category": "Voice dictation (AI productivity)",
+    "businessModel": "Prosumer",
+    "stage": "Venture-backed growth (2.5M organic monthly active users)",
+    "audience": {
+      "primary": "Knowledge workers, founders and developers who write all day",
+      "buyer": "Individuals first; team leads and IT for business plans",
+      "user": "Anyone who types for a living — email, Slack, docs and code prompts"
+    },
+    "jobsToBeDone": ["Write faster without typing", "Prompt AI tools and code by voice", "Get meeting notes automatically", "Work in many languages"],
+    "competitors": ["macOS Dictation", "Superwhisper", "Otter.ai", "Dragon"],
+    "differentiators": ["Polished writing, not raw transcription — it cleans up as you speak", "Works in every app and on every device", "Personalised to your words and style", "Privacy-forward: 'Your voice stays yours'"]
+  },
+  "positioning": {
+    "statement": "For people who think faster than they type, Wispr Flow is the voice interface that turns natural speech into polished writing in any app — so you can speak at the speed you think.",
+    "promise": "Don't type, just speak.",
+    "pillars": [
+      { "name": "4x faster than typing", "description": "220 wpm spoken versus 45 wpm typed — measured, not promised." },
+      { "name": "Everywhere you write", "description": "Every app, every device, 100+ languages." },
+      { "name": "Sounds like you", "description": "Flow learns your vocabulary and style, and your voice stays private." }
+    ]
+  },
+  "personality": {
+    "summary": "Wispr Flow feels like a beautifully printed book that talks. A literary serif with expressive italics, cream paper, deep green and a soft lavender button make a high-tech product feel human and a little poetic. It is witty ('You have a way with words. Now, two.'), confident about speed, and protective about privacy.",
+    "archetype": "The Poet-Engineer — eloquent on the surface, precise underneath.",
+    "traits": [
+      { "trait": "Eloquent", "notThis": "Flowery", "description": "EB Garamond with italic emphasis ('just speak.', 'than typing') — literary, but headlines stay short." },
+      { "trait": "Witty", "notThis": "Jokey", "description": "Wordplay lands once per section: 'You have a way with words. Now, two.'" },
+      { "trait": "Fast", "notThis": "Frantic", "description": "Speed is quantified (4x, 220 wpm) and shown with text flowing along curved paths — fluid, not frenetic." },
+      { "trait": "Human", "notThis": "Sentimental", "description": "Real people's photos and voices; product framed around how you work." }
+    ],
+    "spectrum": { "formalCasual": 0.55, "seriousPlayful": 0.5, "technicalAccessible": 0.8, "restrainedExpressive": 0.55, "classicModern": 0.35, "quietLoud": 0.4 }
+  },
+  "voice": {
+    "summary": "Short, crafted lines with a turn in them. Headlines are imperatives or crisp claims, often with an italic second half; supporting copy is plain and specific about speed, apps and privacy.",
+    "principles": [
+      { "name": "Say it like speech", "description": "Imperatives and contractions — the way you'd say it out loud.", "do": "Don't type, just speak.", "dont": "Leverage AI-powered speech recognition technology." },
+      { "name": "Measure the magic", "description": "Speed claims are numbers.", "do": "4x faster than typing", "dont": "Lightning-fast dictation" },
+      { "name": "One turn of phrase", "description": "A single, earned bit of wordplay per moment.", "do": "You have a way with words. Now, two.", "dont": "Unleash your inner wordsmith with the power of voice! 🎤" },
+      { "name": "Privacy, plainly", "description": "Short, possessive promises.", "do": "Your voice stays yours.", "dont": "Industry-leading data protection." }
+    ],
+    "vocabulary": {
+      "use": ["speak", "voice", "words", "flow", "every app", "polished", "the speed you think", "dictation", "notetaker"],
+      "avoid": ["transcription engine", "leverage", "revolutionize", "unleash", "seamless", "AI-powered"]
+    },
+    "mechanics": [
+      "Sentence case; headlines end with a period when they're statements.",
+      "Italic serif for the emphasized half of a headline.",
+      "Numerals for speed and scale ('4x', '220 wpm', '100+ languages').",
+      "Primary CTA names the platform: 'Get started on macOS'."
+    ],
+    "examples": [
+      { "context": "Hero", "onBrand": "Don't type, *just speak.*", "offBrand": "The AI dictation app that supercharges your productivity" },
+      { "context": "Feature", "onBrand": "Speak at the speed you think, in every app, on every device.", "offBrand": "Cross-platform voice-to-text integration" },
+      { "context": "Error", "onBrand": "We didn't catch that. Hold Fn and try again.", "offBrand": "Speech recognition failed. Error code 0x02." },
+      { "context": "Social", "onBrand": "45 wpm typing. 220 wpm speaking. Same thoughts, 4x sooner.", "offBrand": "Type less, do more!!! 🚀" }
+    ],
+    "taglines": ["Don't type, just speak.", "Speak at the speed you think.", "The voice interface for writing."]
+  },
+  "visual": {
+    "summary": "Cream paper (#FFFFEB), soft black ink (#1A1A1A), deep forest green (#034F46) sections and a lavender (#F0D7FF) action button, set in EB Garamond with expressive italics over Figtree UI type. The signature visual is text flowing along curved paths, like speech becoming writing.",
+    "principles": [
+      { "name": "Book typography, app product", "description": "EB Garamond 400 for headlines (italics for emphasis) at very tight leading (0.85–0.95); Figtree for everything functional." },
+      { "name": "Lavender acts", "description": "The primary CTA is a lavender pill with dark text — soft, distinctive, never a default blue." },
+      { "name": "Green for proof", "description": "Deep green full-width bands hold the quantified claims (4x faster)." },
+      { "name": "Words in motion", "description": "Spoken words travel along curved ribbons across the page — the brand's core metaphor." }
+    ],
+    "colorUsage": "Cream dominates; ink for type and the customer band; forest green for proof sections; lavender reserved for CTAs; coral (#FF6C4C) and amber (#FFA946) as small accents in illustrations and tags.",
+    "typography": "EB Garamond for display (roman + italic contrast within a line); Figtree 500–600 for UI, eyebrows (+0.08em uppercase) and body.",
+    "layout": "Centered hero and section headers on a 1240px measure, full-bleed colored bands with large top radii (stacked cards), airy rhythm.",
+    "imagery": "Warm, motion-blurred lifestyle photography; product UI pills (the waveform 'listening' pill); monochrome customer logos on ink.",
+    "iconography": "Simple 1.5px icons; the waveform glyph is the recurring motif.",
+    "shape": "Pills for buttons and status; 24–32px radii on stacked full-width sections.",
+    "do": ["Pair a roman headline with an italic turn.", "Use lavender only for the primary action.", "Show words flowing along curves to express dictation."],
+    "dont": ["Don't use microphone clip-art or soundwave stock graphics.", "Don't use a sans-serif for display headlines.", "Don't use blue or purple gradients for 'AI'."]
+  },
+  "motion": {
+    "summary": "Fluid and literal: sentences travel along curved paths across the hero, the listening pill pulses with a waveform, and sections stack with GSAP-driven scroll. Lottie animations illustrate features. UI transitions are 200–350ms.",
+    "principles": [
+      { "name": "Speech becomes text", "description": "Motion visualises words flowing — continuous, never jittery." },
+      { "name": "Calm stacking", "description": "Sections slide up and stack like cards as you scroll." }
+    ],
+    "signature": "Spoken sentences flowing along curved ribbons through the hero, ending in the waveform listening pill."
+  },
+  "logo": {
+    "clearspace": "The height of the waveform mark on all sides.",
+    "minSize": "16px for the mark; 20px tall for the wordmark.",
+    "misuse": ["Recolor outside ink, cream or white", "Separate the waveform from the wordmark in lockups", "Add effects"]
+  },
+  "colorNames": {
+    "#ffffeb": "Paper",
+    "#1a1a1a": "Ink",
+    "#034f46": "Forest",
+    "#f0d7ff": "Lavender",
+    "#ff6c4c": "Coral",
+    "#ffa946": "Amber",
+    "#e4e4d0": "Parchment",
+    "#34d399": "Mint"
+  },
+  "copy": {
+    "headlines": ["Don't type, just speak.", "4x faster than typing", "Your voice stays yours."],
+    "taglines": ["Don't type, just speak."],
+    "announcement": "Wispr Flow Notetaker is now on Windows and Mac"
+  }
+}
