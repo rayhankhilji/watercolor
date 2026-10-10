@@ -20,7 +20,7 @@ export class Renderer {
   ) {}
 
   static async create(workDir: string) {
-    const browser = await chromium.launch({ args: ["--enable-webgl", "--ignore-gpu-blocklist", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--font-render-hinting=none"] });
+    const browser = await chromium.launch({ args: ["--font-render-hinting=none"] });
     await ensureDir(workDir);
     return new Renderer(browser, workDir);
   }

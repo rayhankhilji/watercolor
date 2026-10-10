@@ -392,7 +392,8 @@ export async function capture(opts: CaptureOptions): Promise<CaptureResult> {
 async function launch(headed?: boolean): Promise<Browser> {
   return chromium.launch({
     headless: !headed,
-    args: ["--enable-webgl", "--ignore-gpu-blocklist", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--autoplay-policy=no-user-gesture-required"],
+    // Default GPU config: forcing SwiftShader flags made WebGL-heavy pages ~8× slower to screenshot.
+    args: ["--autoplay-policy=no-user-gesture-required"],
   });
 }
 

@@ -1,0 +1,10 @@
+{
+  "name": "watercolor",
+  "description": "Turn any URL into a complete brand identity toolkit: WATERCOLOR.md, design tokens, logo kit, patterns, social templates, motion and a brand book — extracted from the real site.",
+  "version": "0.1.0",
+  "author": { "name": "Rayhan Khilji" },
+  "homepage": "https://github.com/rayhankhilji/watercolor",
+  "repository": "https://github.com/rayhankhilji/watercolor",
+  "license": "MIT",
+  "keywords": ["brand", "design-system", "design-tokens", "brand-guidelines", "motion", "logo"]
+}

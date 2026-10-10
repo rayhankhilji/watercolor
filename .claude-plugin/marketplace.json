@@ -1,0 +1,11 @@
+{
+  "name": "watercolor",
+  "owner": { "name": "Rayhan Khilji" },
+  "plugins": [
+    {
+      "name": "watercolor",
+      "source": "./",
+      "description": "URL → brand identity toolkit (WATERCOLOR.md, tokens, logo kit, motion, brand book)."
+    }
+  ]
+}

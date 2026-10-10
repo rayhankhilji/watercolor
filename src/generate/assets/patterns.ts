@@ -28,7 +28,10 @@ export interface Pattern {
   name: string;
   title: string;
   description: string;
-  svg: string;
+  /** Vector source (omitted for shader-rendered patterns). */
+  svg?: string;
+  /** Self-contained HTML that renders the pattern (shader patterns); also saved as editable source. */
+  render?: string;
   tile?: string;
   derived: boolean;
 }
@@ -59,50 +62,27 @@ export function buildPatterns(b: ResolvedBrand, markSvg?: string): Pattern[] {
   const darkBg = isDark(bg);
   const out: Pattern[] = [];
 
-  // 1 — Watercolor wash: translucent pigment layers with pooled (darker) edges,
-  //     granulation and cold-press paper — glazed in the brand's own hues.
+  // 1 — Watercolor wash: translucent pigment glazes with wet, noise-warped edges, pooled
+  //     (darker) rims, granulation and cold-press paper — in the brand's own hues.
+  //     Rendered by a WebGL shader (SVG filter stacks take minutes on CPU rasterizers).
   {
-    const layers: string[] = [];
-    const groups: string[][] = [];
-    const n = 9;
-    for (let i = 0; i < n; i++) {
-      const c = cols[i % cols.length];
-      const cx = W * (0.05 + rand() * 0.9);
-      const cy = H * (0.08 + rand() * 0.84);
-      const rx = W * (0.1 + rand() * 0.16);
-      const ry = H * (0.14 + rand() * 0.24);
-      const rot = Math.round(rand() * 180);
-      const f = i % 3;
-      (groups[f] ||= []).push(`<ellipse cx="${cx.toFixed(0)}" cy="${cy.toFixed(0)}" rx="${rx.toFixed(0)}" ry="${ry.toFixed(0)}" transform="rotate(${rot} ${cx.toFixed(0)} ${cy.toFixed(0)})" fill="${c}" fill-opacity="${(0.42 + rand() * 0.2).toFixed(2)}"/>`);
-    }
-    // One filter pass per pigment group (not per blob) keeps render time sane.
-    for (const [f, g] of groups.entries()) layers.push(`<g filter="url(#wc${f})" opacity="${(0.78 + f * 0.06).toFixed(2)}">${g.join("")}</g>`);
-    const seed = Math.floor(rand() * 1000);
+    const blobs = Array.from({ length: 7 }, (_, i) => ({
+      x: 0.05 + rand() * 0.9,
+      y: 0.08 + rand() * 0.84,
+      rx: 0.1 + rand() * 0.17,
+      ry: 0.16 + rand() * 0.26,
+      rot: rand() * Math.PI,
+      a: 0.4 + rand() * 0.28,
+      c: cols[i % cols.length],
+    }));
     const paper = darkBg ? bg : mix(bg, "#f4efe6", 0.4);
-    const wcFilter = (id: number, s: number) => `<filter id="wc${id}" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="${(0.006 + id * 0.0015).toFixed(4)}" numOctaves="3" seed="${s}" result="n"/>
-      <feDisplacementMap in="SourceGraphic" in2="n" scale="${110 + id * 30}" xChannelSelector="R" yChannelSelector="G" result="shape"/>
-      <feGaussianBlur in="shape" stdDeviation="2.2" result="soft"/>
-      <feGaussianBlur in="shape" stdDeviation="16" result="spread"/>
-      <feComposite in="soft" in2="spread" operator="arithmetic" k1="0" k2="1.75" k3="-0.85" k4="0" result="rim"/>
-      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="${s + 11}" result="g"/>
-      <feDisplacementMap in="rim" in2="g" scale="9" result="gran"/>
-      <feComposite in="gran" in2="soft" operator="in"/>
-    </filter>`;
+    const seed = Math.floor(rand() * 1000);
     out.push({
       name: "watercolor-wash",
       title: "Watercolor wash",
-      description: "Translucent glazes in the brand's own hues, with pooled pigment edges, granulation and cold-press paper. Hero backgrounds, covers, editorial and campaign moments.",
+      description: "Translucent glazes in the brand's own hues, with wet edges, pooled pigment rims, granulation and cold-press paper. Hero backgrounds, covers, editorial and campaign moments.",
       derived: true,
-      svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">
-  <defs>
-    ${wcFilter(0, seed)}${wcFilter(1, seed + 5)}${wcFilter(2, seed + 9)}
-    <filter id="paper" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" seed="${seed + 3}"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.4 1.05"/></filter>
-  </defs>
-  <rect width="100%" height="100%" fill="${paper}"/>
-  <g style="mix-blend-mode:${darkBg ? "screen" : "multiply"}">${layers.join("")}</g>
-  <rect width="100%" height="100%" filter="url(#paper)" opacity="${darkBg ? 0.05 : 0.09}"/>
-</svg>`,
+      render: watercolorHtml(blobs, paper, darkBg, seed, W, H),
     });
   }
 
@@ -275,10 +255,77 @@ export async function renderPatterns(b: ResolvedBrand, r: Renderer, outDir: stri
   const files: string[] = [];
   const dir = path.join(outDir, "patterns");
   for (const p of patterns) {
-    files.push(await write(path.join(dir, `${p.name}.svg`), p.svg));
+    if (p.svg) files.push(await write(path.join(dir, `${p.name}.svg`), p.svg));
+    if (p.render) files.push(await write(path.join(dir, "source", `${p.name}.html`), p.render));
     if (p.tile) files.push(await write(path.join(dir, "tiles", `${p.name}-tile.svg`), p.tile));
-    const html = `<!doctype html><html><head><style>${fontCss}html,body{margin:0;width:${W}px;height:${H}px;overflow:hidden}svg{display:block}</style></head><body>${p.svg}</body></html>`;
+    const html = p.render ?? `<!doctype html><html><head><style>${fontCss}html,body{margin:0;width:${W}px;height:${H}px;overflow:hidden}svg{display:block}</style></head><body>${p.svg}</body></html>`;
     files.push(await r.png(html, path.join(dir, `${p.name}.png`), { width: W, height: H, name: `pattern-${p.name}` }));
   }
   return files;
+}
+
+interface Blob {
+  x: number;
+  y: number;
+  rx: number;
+  ry: number;
+  rot: number;
+  a: number;
+  c: Hex;
+}
+
+/** Self-contained WebGL watercolor renderer. Deterministic: same blobs + seed → same image. */
+export function watercolorHtml(blobs: Blob[], paper: Hex, dark: boolean, seed: number, w: number, h: number) {
+  const rgb = (hx: string) => [1, 3, 5].map((i) => (parseInt(hx.slice(i, i + 2), 16) / 255).toFixed(4));
+  const data = blobs.map((b) => [b.x * w, b.y * h, b.rx * w, b.ry * h, b.rot, b.a, ...rgb(b.c)].map(Number));
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Watercolor wash</title><style>html,body{margin:0;width:${w}px;height:${h}px;overflow:hidden;background:${paper}}canvas{display:block}</style></head>
+<body><canvas id="c" width="${w}" height="${h}"></canvas><script>
+const B = ${JSON.stringify(data)};
+const gl = document.getElementById('c').getContext('webgl2', { preserveDrawingBuffer: true });
+const fs = \`#version 300 es
+precision highp float;
+uniform vec2 r; uniform vec3 paper; uniform float seed; uniform int n; uniform float D[${blobs.length * 9}];
+out vec4 o;
+vec2 h2(vec2 p){ p = vec2(dot(p,vec2(127.1,311.7)), dot(p,vec2(269.5,183.3))); return -1.+2.*fract(sin(p)*43758.5453123); }
+float noise(vec2 p){ vec2 i=floor(p), f=fract(p); vec2 u=f*f*(3.-2.*f);
+  return mix(mix(dot(h2(i),f), dot(h2(i+vec2(1,0)),f-vec2(1,0)),u.x), mix(dot(h2(i+vec2(0,1)),f-vec2(0,1)), dot(h2(i+vec2(1,1)),f-vec2(1,1)),u.x),u.y); }
+float fbm(vec2 p){ float v=0., a=.5; for(int i=0;i<5;i++){ v+=a*noise(p); p=p*2.03+17.1; a*=.5; } return v; }
+void main(){
+  vec2 px = vec2(gl_FragCoord.x, r.y - gl_FragCoord.y);
+  vec3 c = paper;
+  for (int i = 0; i < ${blobs.length}; i++) {
+    if (i >= n) break;
+    int k = i * 9;
+    vec2 d = px - vec2(D[k], D[k+1]);
+    float cr = cos(D[k+4]), sr = sin(D[k+4]);
+    d = mat2(cr, -sr, sr, cr) * d / vec2(D[k+2], D[k+3]);
+    float fi = float(i) * 13.7 + seed;
+    // Wet edge: the boundary wanders at two scales, like pigment following paper fibres.
+    float warp = fbm(px * .0035 + fi) * .7 + fbm(px * .018 + fi * 1.7) * .14;
+    float dist = length(d) + warp - .12;
+    float inside = 1. - smoothstep(.86, .9, dist);
+    float rim = smoothstep(.55, .89, dist) * inside;                 // pooled pigment at the drying edge
+    float bloom = smoothstep(.0, .45, fbm(px * .006 - fi)) * .35;     // back-runs / cauliflower blooms
+    float gran = fbm(px * .22 + fi) * .5 + .5;                        // granulation
+    float a = D[k+5] * inside * (.55 + .75 * rim - bloom) * (.82 + .3 * gran);
+    vec3 pig = vec3(D[k+6], D[k+7], D[k+8]);
+    ${dark ? "c = 1. - (1. - c) * (1. - pig * clamp(a, 0., 1.));" : "c *= mix(vec3(1.), pig, clamp(a, 0., 1.));"}
+  }
+  float tooth = fbm(px * .9 + seed) * .5 + .5;
+  c *= ${dark ? "1. + (tooth - .5) * .05" : ".965 + tooth * .05"};
+  o = vec4(c, 1.);
+}\`;
+const vs = \`#version 300 es
+in vec2 p; void main(){ gl_Position = vec4(p, 0., 1.); }\`;
+const sh = (t, s) => { const x = gl.createShader(t); gl.shaderSource(x, s); gl.compileShader(x); if (!gl.getShaderParameter(x, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(x)); return x; };
+const pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(pr); gl.useProgram(pr);
+gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer()); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+const l = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, 2, gl.FLOAT, false, 0, 0);
+gl.uniform2f(gl.getUniformLocation(pr, 'r'), ${w}, ${h});
+gl.uniform3f(gl.getUniformLocation(pr, 'paper'), ${rgb(paper).join(", ")});
+gl.uniform1f(gl.getUniformLocation(pr, 'seed'), ${seed % 97});
+gl.uniform1i(gl.getUniformLocation(pr, 'n'), B.length);
+gl.uniform1fv(gl.getUniformLocation(pr, 'D'), new Float32Array(B.flat()));
+gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); gl.finish();
+</script></body></html>`;
 }

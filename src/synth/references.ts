@@ -11,6 +11,7 @@ export const REFERENCE_FILES = [
   "typography.md",
   "motion.md",
   "voice.md",
+  "modes.md",
   "categories/b2b-saas.md",
   "categories/ai.md",
   "categories/devtools.md",
