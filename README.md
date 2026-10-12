@@ -70,11 +70,22 @@ Or copy `skills/watercolor` into `~/.claude/skills/` (or any agent that supports
 ### As a CLI
 
 ```bash
-git clone https://github.com/rayhankhilji/watercolor && cd watercolor
-npm install && npm run build && npm link
+npm install -g watercolor-cli
 npx playwright install chromium     # once
 watercolor doctor
 ```
+
+Or without installing: `npx watercolor-cli https://linear.app`.
+
+### API keys (all optional)
+
+| Key | Enables |
+|---|---|
+| `OPENAI_API_KEY` | `watercolor synthesize` (strategy via GPT, default `gpt-5.5`) **and** `watercolor imagine` (GPT Image, newest available model first) |
+| `ANTHROPIC_API_KEY` | `watercolor synthesize` via Claude (preferred when both keys are set; force with `--provider openai`) |
+| `FAL_KEY` | `watercolor imagine` via fal.ai |
+
+None are needed when an agent runs the skill — the agent writes the strategy itself, and images are only generated when you explicitly run `watercolor imagine`. Override models with `--model`, `WATERCOLOR_OPENAI_MODEL`, `WATERCOLOR_MODEL` (Claude) or `WATERCOLOR_IMAGE_MODEL`.
 
 Requires Node ≥ 20. `ffmpeg` is needed for video/GIF output (`brew install ffmpeg`, or `npm i ffmpeg-static`).
 
@@ -103,7 +114,7 @@ url ──▶ capture ──▶ extract ──▶ brief.md ──▶ agent write
 
 1. **Capture** — Playwright visits the homepage and the pages that carry brand signal (brand/press, about, pricing, product, customers, careers), declines cookie banners, scrolls everything, records the network (fonts, CSS, SVG, GIF, Lottie, Rive, video), hooks `shaderSource` and `getContext`, hovers CTAs, screenshots components, records canvases and a scroll-through, and captures mobile.
 2. **Extract** — an in-page collector aggregates every visible element by painted area and rendered characters; Node turns it into a typed [`brand.json`](src/profile/schema.ts).
-3. **Strategy** — the agent reads `brief.md`, the screenshots and the [reference library](skills/watercolor/references/) and writes [`strategy.json`](src/profile/strategy.ts). No agent? `watercolor synthesize` does it with Claude via the API.
+3. **Strategy** — the agent reads `brief.md`, the screenshots and the [reference library](skills/watercolor/references/) and writes [`strategy.json`](src/profile/strategy.ts). No agent? `watercolor synthesize` does it with Claude (`ANTHROPIC_API_KEY`) or OpenAI (`OPENAI_API_KEY`) via the API.
 4. **Build** — deterministic generators render everything with headless Chromium and ffmpeg.
 
 ## Use with any agent
@@ -139,7 +150,7 @@ watercolor build [dir]           render everything from brand.json + strategy.js
 watercolor profile [dir]         rebuild brand.json from the saved capture (no re-crawl)
 watercolor brief [dir]           (re)write the agent brief
 watercolor mode <mode> [dir]     switch extract | extend | evolve | reimagine
-watercolor synthesize [dir]      write strategy.json with Claude (ANTHROPIC_API_KEY)
+watercolor synthesize [dir]      write strategy.json with Claude or OpenAI (ANTHROPIC_API_KEY or OPENAI_API_KEY)
 watercolor imagine [dir]         optional on-brand imagery (OPENAI_API_KEY or FAL_KEY)
 watercolor remotion [dir]        scaffold a Remotion project wired to the brand
 watercolor doctor                check Chromium / ffmpeg

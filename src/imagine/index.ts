@@ -16,27 +16,46 @@ export interface ImageProvider {
   generate(prompt: string, size: { width: number; height: number }): Promise<Uint8Array>;
 }
 
+const OPENAI_IMAGE_MODELS = ["gpt-image-2.5-flare", "gpt-image-2", "gpt-image-1"];
+
 const openai = (): ImageProvider | null => {
   const key = process.env.OPENAI_API_KEY;
   if (!key) return null;
-  const model = process.env.WATERCOLOR_IMAGE_MODEL ?? "gpt-image-1";
-  return {
-    name: `openai:${model}`,
+  const base = (process.env.OPENAI_BASE_URL ?? "https://api.openai.com/v1").replace(/\/$/, "");
+  // Newest first; fall back when an account doesn't have access to a model yet.
+  const chain = process.env.WATERCOLOR_IMAGE_MODEL ? [process.env.WATERCOLOR_IMAGE_MODEL] : OPENAI_IMAGE_MODELS;
+  let working: string | undefined;
+  const provider: ImageProvider = {
+    name: `openai:${chain[0]}`,
     async generate(prompt, size) {
       const s = size.width > size.height ? "1536x1024" : size.width < size.height ? "1024x1536" : "1024x1024";
-      const res = await fetch("https://api.openai.com/v1/images/generations", {
-        method: "POST",
-        headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
-        body: JSON.stringify({ model, prompt, size: s, n: 1 }),
-      });
-      if (!res.ok) throw new Error(`OpenAI images ${res.status}: ${(await res.text()).slice(0, 300)}`);
-      const j = (await res.json()) as { data: { b64_json?: string; url?: string }[] };
-      const d = j.data[0];
-      if (d.b64_json) return Buffer.from(d.b64_json, "base64");
-      if (d.url) return new Uint8Array(await (await fetch(d.url)).arrayBuffer());
-      throw new Error("OpenAI returned no image");
+      let lastErr = "";
+      for (const model of working ? [working] : chain) {
+        const res = await fetch(`${base}/images/generations`, {
+          method: "POST",
+          headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
+          signal: AbortSignal.timeout(5 * 60_000),
+          body: JSON.stringify({ model, prompt, size: s, n: 1 }),
+        });
+        if (res.ok) {
+          working = model;
+          provider.name = `openai:${model}`;
+          const j = (await res.json()) as { data: { b64_json?: string; url?: string }[] };
+          const d = j.data[0];
+          if (d.b64_json) return Buffer.from(d.b64_json, "base64");
+          if (d.url) return new Uint8Array(await (await fetch(d.url)).arrayBuffer());
+          throw new Error("OpenAI returned no image");
+        }
+        lastErr = `${res.status}: ${(await res.text()).slice(0, 300)}`;
+        if (res.status === 401) throw new Error("OpenAI rejected the API key. Check OPENAI_API_KEY.");
+        // Only model-availability errors fall through to the next model.
+        if (!(res.status === 404 || res.status === 403 || (res.status === 400 && /model/i.test(lastErr)))) break;
+        log.info(`${model} unavailable on this account, trying the next image model…`);
+      }
+      throw new Error(`OpenAI images ${lastErr}`);
     },
   };
+  return provider;
 };
 
 const fal = (): ImageProvider | null => {
@@ -74,7 +93,7 @@ export function artDirection(b: ResolvedBrand) {
     .join(" ");
 }
 
-export async function imagine(dir: string, o: { count?: number; prompt?: string }) {
+export async function imagine(dir: string, o: { count?: number; prompt?: string; subjects?: string[] }) {
   const provider = openai() ?? fal();
   if (!provider) {
     log.error("No image provider configured. Set OPENAI_API_KEY (OpenAI Images) or FAL_KEY (fal.ai). Everything else in watercolor works without one.");
@@ -90,8 +109,9 @@ export async function imagine(dir: string, o: { count?: number; prompt?: string 
     { name: "abstract", size: { width: 1024, height: 1024 }, subject: `An abstract composition built from the brand palette and its ${b.profile.shape.language} shape language` },
     { name: "product-scene", size: { width: 1536, height: 1024 }, subject: `A device on a desk in a real environment showing a ${b.name} interface (screen content blurred)` },
   ];
-  log.step(`Generating imagery with ${provider.name}`);
-  for (const s of subjects) {
+  const chosen = o.subjects?.length ? subjects.filter((s) => o.subjects!.includes(s.name)) : subjects;
+  log.step(`Generating ${chosen.length * (o.count ?? 1)} image(s) — imagery runs only when you call \`watercolor imagine\`, never during build`);
+  for (const s of chosen) {
     for (let i = 0; i < (o.count ?? 1); i++) {
       const prompt = `${s.subject}. ${base}${o.prompt ? ` ${o.prompt}` : ""}`;
       try {

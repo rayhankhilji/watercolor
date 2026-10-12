@@ -1,6 +1,5 @@
 import path from "node:path";
 import { readFile } from "node:fs/promises";
-import Anthropic from "@anthropic-ai/sdk";
 import type { BrandProfile } from "../profile/schema.js";
 import type { BrandStrategy } from "../profile/strategy.js";
 import { buildBrief } from "./brief.js";
@@ -9,75 +8,57 @@ import { log } from "../util/log.js";
 import { REFERENCE_FILES, readReference } from "./references.js";
 
 /**
- * Standalone strategy synthesis via the Anthropic API.
- * When watercolor runs as an Agent Skill, the agent itself does this step and this
- * command is never needed. Credentials resolve the SDK's usual way (ANTHROPIC_API_KEY,
- * ANTHROPIC_AUTH_TOKEN, or an `ant auth login` profile).
+ * Standalone strategy synthesis — writes strategy.json with an LLM when no agent is driving
+ * (CI, scripts, plain CLI use). When watercolor runs as an Agent Skill, the agent does this
+ * step itself and this command isn't needed.
+ *
+ * Providers: Claude (ANTHROPIC_API_KEY or an `ant auth login` profile) or OpenAI (OPENAI_API_KEY).
  */
-export async function synthesize(dir: string, o: { model?: string } = {}) {
+export type Provider = "anthropic" | "openai";
+
+export interface SynthesisInput {
+  system: string;
+  prompt: string;
+  images: { mime: "image/png" | "image/jpeg"; base64: string }[];
+}
+
+export async function synthesize(dir: string, o: { model?: string; provider?: Provider } = {}) {
   const profile = await readJson<BrandProfile>(path.join(dir, "brand.json"));
   const sp = path.join(dir, "strategy.json");
   const current = (await exists(sp)) ? await readJson<BrandStrategy>(sp) : ({ version: "1", mode: "extract" } as BrandStrategy);
-  const brief = buildBrief(profile, current.mode);
-  const model = o.model ?? process.env.WATERCOLOR_MODEL ?? "claude-opus-5-5";
+  const provider = o.provider ?? pickProvider();
 
   // Screenshots: desktop + mobile viewport, plus the first canvas still (≤ 4 images).
   const shots = [
     ...profile.screenshots.filter((s) => !s.fullPage).slice(0, 3).map((s) => s.path),
     ...profile.media.canvases.filter((c) => c.poster).slice(0, 1).map((c) => c.poster!),
   ];
-  const images: Anthropic.Beta.BetaImageBlockParam[] = [];
+  const images: SynthesisInput["images"] = [];
   for (const s of shots) {
     const file = path.join(dir, s);
     if (!(await exists(file))) continue;
-    const media_type = s.endsWith(".png") ? "image/png" : "image/jpeg";
-    images.push({ type: "image", source: { type: "base64", media_type, data: (await readFile(file)).toString("base64") } });
+    images.push({ mime: s.endsWith(".png") ? "image/png" : "image/jpeg", base64: (await readFile(file)).toString("base64") });
   }
   const refs = (await Promise.all(REFERENCE_FILES.map(async (f) => `<reference name="${f}">\n${await readReference(f)}\n</reference>`))).join("\n\n");
+  const input: SynthesisInput = {
+    system: `You are a senior brand strategist and design director. You write precise, evidence-grounded brand strategy — never generic filler. Use the reference library below as your training in what great (and sloppy) brand work looks like.\n\n${refs}`,
+    prompt: `${buildBrief(profile, current.mode)}\n\nRespond with ONLY the strategy.json object as raw JSON (no prose, no code fences). Keep "version": "1" and "mode": "${current.mode}".`,
+    images,
+  };
 
-  log.step(`Synthesizing strategy with ${model} (${images.length} screenshots, mode ${current.mode})`);
-  const client = new Anthropic();
-  const stream = client.beta.messages.stream({
-    model,
-    max_tokens: 64000,
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default",
-    thinking: { type: "adaptive" },
-    output_config: { effort: "high" },
-    system: [
-      {
-        type: "text",
-        text: `You are a senior brand strategist and design director. You write precise, evidence-grounded brand strategy — never generic filler. Use the reference library below as your training in what great (and sloppy) brand work looks like.\n\n${refs}`,
-        cache_control: { type: "ephemeral" },
-      },
-    ],
-    messages: [
-      {
-        role: "user",
-        content: [
-          ...images,
-          { type: "text", text: `${brief}\n\nRespond with ONLY the strategy.json object as raw JSON (no prose, no code fences). Keep "version": "1" and "mode": "${current.mode}".` },
-        ],
-      },
-    ],
-  });
-  let msg: Anthropic.Beta.BetaMessage;
-  try {
-    msg = await stream.finalMessage();
-  } catch (e) {
-    if (e instanceof Anthropic.AuthenticationError) throw new Error("Anthropic API rejected the credentials. Set a valid ANTHROPIC_API_KEY (or log in with `ant auth login`). Running as an Agent Skill? Skip this command — the agent writes strategy.json itself.");
-    if (e instanceof Anthropic.RateLimitError) throw new Error("Rate limited by the Anthropic API — wait a moment and retry.");
-    if (e instanceof Anthropic.BadRequestError) throw new Error(`Anthropic API rejected the request: ${e.message}`);
-    if (e instanceof Anthropic.APIConnectionError) throw new Error("Couldn't reach the Anthropic API — check your connection.");
-    throw e;
-  }
-  if (msg.stop_reason === "refusal") throw new Error(`The model declined to write a strategy (${msg.stop_details?.category ?? "no category"}).`);
-  if (msg.stop_reason === "max_tokens") throw new Error("Strategy output was truncated (max_tokens). Try again.");
-  const text = msg.content.flatMap((b) => (b.type === "text" ? [b.text] : [])).join("");
+  const run = provider === "openai" ? (await import("./openai.js")).synthesizeOpenAI : (await import("./anthropic.js")).synthesizeAnthropic;
+  const text = await run(input, o.model);
   const strategy = parseStrategy(text, current);
   await writeJson(sp, strategy);
   log.ok(`strategy.json written (${Object.keys(strategy).length} sections) — now run \`watercolor build ${dir}\``);
   return strategy;
+}
+
+function pickProvider(): Provider {
+  if (process.env.WATERCOLOR_PROVIDER === "openai" || process.env.WATERCOLOR_PROVIDER === "anthropic") return process.env.WATERCOLOR_PROVIDER;
+  if (process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN) return "anthropic";
+  if (process.env.OPENAI_API_KEY) return "openai";
+  throw new Error("No LLM credentials found. Set ANTHROPIC_API_KEY (Claude) or OPENAI_API_KEY (OpenAI) — or run watercolor as an Agent Skill, where the agent writes strategy.json itself.");
 }
 
 export function parseStrategy(text: string, base: BrandStrategy): BrandStrategy {

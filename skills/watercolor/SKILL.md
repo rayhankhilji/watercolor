@@ -86,8 +86,8 @@ After upgrading watercolor, `scripts/watercolor.sh profile brand` re-derives `br
 ## Optional extras
 
 - `scripts/watercolor.sh remotion brand` → a Remotion project (LogoReveal, Headline, Sizzle) wired to the brand. Remotion needs a company license for orgs > 3 people.
-- `scripts/watercolor.sh imagine brand` → on-brand photography/illustration via an image model (needs `OPENAI_API_KEY` or `FAL_KEY`). Prompts are composed from strategy + palette.
-- `scripts/watercolor.sh synthesize brand` → writes strategy.json via the Anthropic API when no agent is driving (CI, scripts).
+- `scripts/watercolor.sh imagine brand [--subjects hero]` → on-brand photography/illustration via an image model (needs `OPENAI_API_KEY` or `FAL_KEY`; costs money — only run when the user asks). Prompts are composed from strategy + palette.
+- `scripts/watercolor.sh synthesize brand` → writes strategy.json via Claude (`ANTHROPIC_API_KEY`) or OpenAI (`OPENAI_API_KEY`) when no agent is driving (CI, scripts).
 
 ## Ethics
 

@@ -129,12 +129,17 @@ program
 program
   .command("synthesize")
   .argument("[dir]", "brand directory", "brand")
-  .description("write strategy.json with Claude via the Anthropic API (needs ANTHROPIC_API_KEY) — skip this when an agent runs the skill")
-  .option("--model <id>", "Claude model id")
+  .description("write strategy.json with an LLM — Claude (ANTHROPIC_API_KEY) or OpenAI (OPENAI_API_KEY); skip this when an agent runs the skill")
+  .option("--provider <name>", "anthropic | openai (default: whichever key is set, Claude first)")
+  .option("--model <id>", "model id for the chosen provider")
   .action(async (dir: string, o) => {
     const { synthesize } = await import("./synth/llm.js");
     await requireProfile(dir);
-    await synthesize(dir, { model: o.model });
+    if (o.provider && !["anthropic", "openai"].includes(o.provider)) {
+      log.error(`Unknown provider "${o.provider}". Use anthropic or openai.`);
+      process.exit(2);
+    }
+    await synthesize(dir, { model: o.model, provider: o.provider });
   });
 
 program
@@ -143,10 +148,11 @@ program
   .description("optional: generate on-brand imagery with an image model (OPENAI_API_KEY or FAL_KEY)")
   .option("-n, --count <n>", "images per prompt", (v) => parseInt(v, 10), 1)
   .option("--prompt <text>", "extra art direction")
+  .option("--subjects <list>", "comma-separated subset: hero,people,abstract,product-scene")
   .action(async (dir: string, o) => {
     const { imagine } = await import("./imagine/index.js");
     await requireProfile(dir);
-    await imagine(dir, { count: o.count, prompt: o.prompt });
+    await imagine(dir, { count: o.count, prompt: o.prompt, subjects: o.subjects ? String(o.subjects).split(",").map((x: string) => x.trim()) : undefined });
   });
 
 program
@@ -178,8 +184,8 @@ program
     else log.warn("ffmpeg not found — motion & recordings will be skipped. Install it (brew install ffmpeg) or `npm i ffmpeg-static`.");
     const unzip = spawnSync("unzip", ["-v"], { stdio: "ignore" }).status === 0;
     if (unzip) log.ok("unzip available (brand-kit archives are expanded)");
-    log.info(`ANTHROPIC_API_KEY ${process.env.ANTHROPIC_API_KEY ? "set" : "not set"} (only needed for \`watercolor synthesize\`)`);
-    log.info(`OPENAI_API_KEY / FAL_KEY ${process.env.OPENAI_API_KEY || process.env.FAL_KEY ? "set" : "not set"} (only needed for \`watercolor imagine\`)`);
+    log.info(`ANTHROPIC_API_KEY ${process.env.ANTHROPIC_API_KEY ? "set" : "not set"} · OPENAI_API_KEY ${process.env.OPENAI_API_KEY ? "set" : "not set"} — either powers \`watercolor synthesize\``);
+    log.info(`OPENAI_API_KEY / FAL_KEY ${process.env.OPENAI_API_KEY || process.env.FAL_KEY ? "set" : "not set"} — powers \`watercolor imagine\` (only when you run it)`);
     process.exitCode = ok ? 0 : 1;
   });
 
