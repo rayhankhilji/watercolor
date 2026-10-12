@@ -33,7 +33,13 @@ export async function scaffoldRemotion(dir: string) {
     }
   }
   const shots: string[] = [];
-  for (const s of b.profile.screenshots.filter((s) => !s.fullPage && s.viewport === "desktop").slice(0, 5)) {
+  // The brand's own product story first: home, product, pricing… — never press/blog pages.
+  const pageOrder = ["home", "product", "customers", "enterprise", "pricing", "about"];
+  const kindOf = (url: string) => b.profile.source.pages.find((p) => p.url === url)?.kind ?? "other";
+  const ownShots = b.profile.screenshots
+    .filter((s) => !s.fullPage && s.viewport === "desktop" && pageOrder.includes(kindOf(s.page)))
+    .sort((x, y) => pageOrder.indexOf(kindOf(x.page)) - pageOrder.indexOf(kindOf(y.page)));
+  for (const s of ownShots.slice(0, 5)) {
     const n = `shot-${shots.length + 1}${path.extname(s.path)}`;
     if (await copy(path.join(dir, s.path), n)) shots.push(n);
   }
@@ -59,6 +65,8 @@ export async function scaffoldRemotion(dir: string) {
     radius: b.radius.button,
     motion: b.motion,
     assets: { logo, shots, videos, gradientLoop, fonts },
+    // Captured canvases are composited on the page background, so the headline sits on that.
+    headlineScene: sig ? { bg: b.roles.background, fg: b.roles.foreground } : { bg: b.roles.inverseBackground, fg: "#ffffff" },
   };
 
   await writeJson(path.join(root, "package.json"), {
@@ -135,7 +143,7 @@ export const Headline = () => {
   const frame = useCurrentFrame();
   const words = brand.headline.split(" ");
   return (
-    <AbsoluteFill style={{ background: brand.colors.inverse, color: "#fff", padding: 96, justifyContent: "flex-end" }}>
+    <AbsoluteFill style={{ background: brand.headlineScene.bg, color: brand.headlineScene.fg, padding: 96, justifyContent: "flex-end" }}>
       <Fonts />
       {brand.assets.gradientLoop && <OffthreadVideo src={staticFile(brand.assets.gradientLoop)} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }} muted />}
       <div style={{ position: "relative", fontFamily: brand.fonts.display, fontWeight: brand.type.h1.weight, fontSize: 112, lineHeight: 1.04, letterSpacing: \`\${Math.min(brand.type.h1.letterSpacing, -0.02)}em\`, marginBottom: 280 }}>
