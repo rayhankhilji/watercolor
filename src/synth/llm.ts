@@ -61,7 +61,16 @@ export async function synthesize(dir: string, o: { model?: string } = {}) {
       },
     ],
   });
-  const msg = await stream.finalMessage();
+  let msg: Anthropic.Beta.BetaMessage;
+  try {
+    msg = await stream.finalMessage();
+  } catch (e) {
+    if (e instanceof Anthropic.AuthenticationError) throw new Error("Anthropic API rejected the credentials. Set a valid ANTHROPIC_API_KEY (or log in with `ant auth login`). Running as an Agent Skill? Skip this command — the agent writes strategy.json itself.");
+    if (e instanceof Anthropic.RateLimitError) throw new Error("Rate limited by the Anthropic API — wait a moment and retry.");
+    if (e instanceof Anthropic.BadRequestError) throw new Error(`Anthropic API rejected the request: ${e.message}`);
+    if (e instanceof Anthropic.APIConnectionError) throw new Error("Couldn't reach the Anthropic API — check your connection.");
+    throw e;
+  }
   if (msg.stop_reason === "refusal") throw new Error(`The model declined to write a strategy (${msg.stop_details?.category ?? "no category"}).`);
   if (msg.stop_reason === "max_tokens") throw new Error("Strategy output was truncated (max_tokens). Try again.");
   const text = msg.content.flatMap((b) => (b.type === "text" ? [b.text] : [])).join("");
