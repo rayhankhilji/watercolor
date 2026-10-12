@@ -5,6 +5,7 @@ import { discoverPages } from "../src/crawl/discover.js";
 import { describeEasing } from "../src/extract/system.js";
 import { cleanFamilyName, alternativesFor } from "../src/extract/typography.js";
 import { parseStrategy } from "../src/synth/llm.js";
+import { collapseRepeat } from "../src/extract/voice.js";
 import { recolorSvg, svgSize } from "../src/generate/assets/logo.js";
 import { imageSize } from "../src/util/image-size.js";
 
@@ -137,5 +138,13 @@ describe("image size", () => {
   it("reads PNG dimensions from the header", () => {
     const png = Buffer.from("89504e470d0a1a0a0000000d49484452000002000000010008060000001f15c489", "hex");
     expect(imageSize(png)).toEqual({ width: 512, height: 256, type: "png" });
+  });
+});
+
+describe("copy cleanup", () => {
+  it("collapses headings duplicated for animation or screen readers", () => {
+    expect(collapseRepeat("The system for teams and agents The system for teams and agents")).toBe("The system for teams and agents");
+    expect(collapseRepeat("Ship it. Ship it.")).toBe("Ship it. Ship it.");
+    expect(collapseRepeat("A normal headline")).toBe("A normal headline");
   });
 });

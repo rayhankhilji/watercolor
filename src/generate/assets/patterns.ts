@@ -66,14 +66,16 @@ export function buildPatterns(b: ResolvedBrand, markSvg?: string): Pattern[] {
   //     (darker) rims, granulation and cold-press paper — in the brand's own hues.
   //     Rendered by a WebGL shader (SVG filter stacks take minutes on CPU rasterizers).
   {
+    // On dark grounds only saturated pigments glow; pale or grayish ones read as smoke.
+    const washCols = darkBg ? cols.filter((c) => oklch(c).c > 0.09).concat(cols.filter((c) => oklch(c).c > 0.09).length ? [] : [b.roles.primary]) : cols;
     const blobs = Array.from({ length: 7 }, (_, i) => ({
       x: 0.05 + rand() * 0.9,
       y: 0.08 + rand() * 0.84,
       rx: 0.1 + rand() * 0.17,
       ry: 0.16 + rand() * 0.26,
       rot: rand() * Math.PI,
-      a: 0.4 + rand() * 0.28,
-      c: cols[i % cols.length],
+      a: (0.4 + rand() * 0.28) * (darkBg ? 0.6 : 1),
+      c: washCols[i % washCols.length],
     }));
     const paper = darkBg ? bg : mix(bg, "#f4efe6", 0.4);
     const seed = Math.floor(rand() * 1000);

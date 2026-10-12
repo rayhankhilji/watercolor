@@ -55,13 +55,16 @@ function copy(b: ResolvedBrand) {
   const headline = b.profile.typography.twoTone && !b.copy.taglines[0] ? clip(full, 96) : firstSentence(full);
   const sub = clip(b.copy.subhead || b.description, 150);
   const cat = (b.strategy.company?.category ?? "").split(/[(\-–—,]/)[0].trim();
-  const eyebrow = cat && cat.length <= 28 ? cat : b.profile.company.categories[0]?.name ?? b.domain;
+  // Without an agent-written category, show no eyebrow rather than a keyword guess.
+  const eyebrow = cat && cat.length <= 28 ? cat : "";
   return { headline: b.profile.typography.twoTone ? headline : clip(headline, 90), sub, eyebrow };
 }
 
 export const art = (b: ResolvedBrand, c: SocialContext, prefer: string[]) => {
   // The brand's own animated surface (captured WebGL/canvas still) beats any generated pattern.
   if (b.signatureArt && prefer.includes("mesh-gradient")) return `url('${c.asset(b.signatureArt)}') center/cover, ${b.roles.background}`;
+  // Real product UI from the homepage is more authentic than a generated mesh.
+  if (b.heroImage && b.heroImageKind === "screenshot" && prefer.includes("mesh-gradient")) return `url('${c.asset(b.heroImage)}') center/cover, ${b.roles.surface}`;
   // Flat brands (no measured gradient): never invent one — use their real imagery or a flat texture.
   if (!b.gradientIsCaptured) {
     if (b.heroImage) return `url('${c.asset(b.heroImage)}') center/cover, ${b.roles.surface}`;
@@ -87,7 +90,7 @@ export const SOCIAL_SPECS: Spec[] = [
   <div style="padding:64px 0 60px 72px;display:flex;flex-direction:column;justify-content:space-between">
     <div>${logoMarkup(b, { on: bg, height: 40 })}</div>
     <div>
-      <div style="${typeStyle(b, "eyebrow", 1.35)};color:${accentText(b, bg)};margin-bottom:22px">${esc(eyebrow)}</div>
+      ${eyebrow ? `<div style="${typeStyle(b, "eyebrow", 1.35)};color:${accentText(b, bg)};margin-bottom:22px">${esc(eyebrow)}</div>` : ""}
       <h1 class="h" style="${headlineCss(b, size)};max-width:700px">${headlineHtml(b, headline)}</h1>
     </div>
     <div style="${typeStyle(b, "body", 1.2)};color:${b.roles.muted}">${esc(b.domain)}</div>

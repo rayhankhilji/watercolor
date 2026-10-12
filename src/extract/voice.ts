@@ -10,7 +10,7 @@ const SMALL_WORDS = new Set("a an the and or but nor for so yet at by in of on t
 
 export function extractVoice(capture: CaptureResult): VoiceCorpus {
   const uniq = (xs: string[]) => [...new Set(xs.map((x) => x.trim()).filter(Boolean))];
-  const headlines = uniq(capture.pages.flatMap((p) => (p.raw.headings as { tag: string; text: string }[]).filter((h) => h.tag === "h1" || h.tag === "h2").map((h) => h.text))).slice(0, 40);
+  const headlines = uniq(capture.pages.flatMap((p) => (p.raw.headings as { tag: string; text: string }[]).filter((h) => h.tag === "h1" || h.tag === "h2").map((h) => collapseRepeat(h.text)))).slice(0, 40);
   const display = uniq(capture.pages.flatMap((p) => p.raw.displayCopy as string[])).filter((d) => !headlines.includes(d));
   const subheadlines = uniq(capture.pages.flatMap((p) => (p.raw.headings as { tag: string; text: string }[]).filter((h) => h.tag === "h3").map((h) => h.text))).slice(0, 30);
   const ctaCounts = new Map<string, number>();
@@ -141,7 +141,7 @@ export function extractIdentity(capture: CaptureResult): Identity {
     name: name.trim(),
     domain,
     title: home.title,
-    tagline: h1 || meta["og:title"],
+    tagline: h1 ? collapseRepeat(h1) : meta["og:title"],
     description: meta["description"] || meta["og:description"],
     themeColor: tc?.hex,
     social,
@@ -232,4 +232,15 @@ export function extractCompany(capture: CaptureResult, voice: VoiceCorpus, custo
     keyPhrases: voice.topTerms.slice(0, 15).map((t) => t.term),
     pagesText,
   };
+}
+
+/** "A B C A B C" → "A B C": sites often duplicate a heading for animation or screen readers. */
+export function collapseRepeat(text: string): string {
+  const t = text.replace(/\s+/g, " ").trim();
+  const w = t.split(" ");
+  for (let n = Math.floor(w.length / 2); n >= 3; n--) {
+    const a = w.slice(0, n).join(" ");
+    if (w.slice(n, 2 * n).join(" ") === a) return collapseRepeat([a, ...w.slice(2 * n)].join(" "));
+  }
+  return t;
 }

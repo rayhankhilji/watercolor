@@ -215,5 +215,5 @@ export async function renderStationery(b: ResolvedBrand, r: Renderer, outDir: st
 
 function shortCategory(b: ResolvedBrand) {
   const cat = (b.strategy.company?.category ?? "").split(/[(\-–—,]/)[0].trim();
-  return cat && cat.length <= 32 ? cat : b.profile.company.categories[0]?.name ?? "Presentation";
+  return cat && cat.length <= 32 ? cat : "Presentation";
 }

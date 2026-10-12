@@ -37,6 +37,7 @@ export interface ResolvedBrand {
   signatureArt?: string;
   /** Largest captured hero image (product shot / illustration / photo) — art for flat brands. */
   heroImage?: string;
+  heroImageKind?: string;
   fonts: { display: FontRef; body: FontRef; mono: FontRef };
   type: Record<string, TypeStyle>;
   radius: { none: number; sm: number; md: number; lg: number; xl: number; full: number; button: string; card: string };
@@ -224,7 +225,8 @@ export async function resolveBrand(profile: BrandProfile, strategy: BrandStrateg
     gradient,
     gradientIsCaptured,
     signatureArt: pickSignatureArt(profile),
-    heroImage: pickHeroImage(profile),
+    heroImage: pickHeroImage(profile)?.path,
+    heroImageKind: pickHeroImage(profile)?.kind,
     fonts: { display, body, mono },
     type,
     radius,
@@ -261,7 +263,7 @@ function pickSignatureArt(p: BrandProfile): string | undefined {
   return c?.poster;
 }
 
-function pickHeroImage(p: BrandProfile): string | undefined {
+function pickHeroImage(p: BrandProfile) {
   const brandWord = p.identity.domain.split(".")[0].toLowerCase();
   const ogFile = p.logo.ogImage ? p.logo.ogImage.split("/").pop() : undefined;
   // Real product UI and illustration beat photos (which are often video stills with logos baked in).
@@ -272,5 +274,5 @@ function pickHeroImage(p: BrandProfile): string | undefined {
     .filter((i) => !i.page || ["home", "product", "about", "customers", "enterprise", "pricing"].includes(i.page))
     .filter((i) => !/og|opengraph|social|share|thumbnail|poster|logo|press/i.test(`${i.alt} ${i.url}`) && !(i.alt || "").toLowerCase().includes(brandWord) && (!ogFile || !i.path!.endsWith(ogFile)))
     .sort((a, b) => (b.page === "home" ? 1 : 0) - (a.page === "home" ? 1 : 0) || rank[b.kind] - rank[a.kind] || (b.context === "hero" ? 1 : 0) - (a.context === "hero" ? 1 : 0) || b.displayWidth * b.displayHeight - a.displayWidth * a.displayHeight)[0];
-  return img?.path;
+  return img;
 }

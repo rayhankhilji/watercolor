@@ -85,7 +85,9 @@ export function hardRules(b: ResolvedBrand): Rule[] {
 
   const sh = P.shape.shadows[0]?.value ?? "";
   const tinted = /rgba\((?!0, 0, 0)(\d+), (\d+), (\d+)/.exec(sh);
-  if (tinted) rules.push({ text: `**Shadows are tinted** (\`rgb(${tinted[1]} ${tinted[2]} ${tinted[3]})\`), never neutral black. Elevation is soft and layered.`, evidence: "shape.shadows" });
+  const light = tinted && Number(tinted[1]) > 200 && Number(tinted[2]) > 200 && Number(tinted[3]) > 200;
+  if (light) rules.push({ text: `**Depth comes from light, not shadow.** Elevation uses faint white edges and inner highlights (\`${sh.slice(0, 60)}${sh.length > 60 ? "…" : ""}\`) rather than drop shadows.`, evidence: "shape.shadows (white-tinted)" });
+  else if (tinted) rules.push({ text: `**Shadows are tinted** (\`rgb(${tinted[1]} ${tinted[2]} ${tinted[3]})\`), never neutral black. Elevation is soft and layered.`, evidence: "shape.shadows" });
   else if (!P.shape.shadows.length) rules.push({ text: "**No drop shadows.** Separation comes from borders and surface color.", evidence: "no box-shadows measured" });
 
   const m = b.motion;
